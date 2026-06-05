@@ -269,7 +269,6 @@
         .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; margin: 0; padding: 0; }
         .todo-sub-fields input#todoLocation { grid-column: span 2; width: 100% !important; box-sizing: border-box; }
         
-        /* [높이 복원 & 너비 고정 통합 픽스] 모바일 환경에서의 완벽한 대칭형 박스 설계 */
         @media (max-width: 480px) {
             .todo-sub-fields { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
             .todo-sub-fields input#todoLocation { width: 100% !important; }
@@ -280,10 +279,10 @@
                 width: 100% !important; 
                 max-width: 100% !important; 
                 min-width: 0 !important; 
-                height: 40px !important; /* 명시적 고정 높이 지정 */
+                height: 40px !important; 
                 min-height: 40px !important; 
-                padding: 8px 12px !important; /* 패딩 값 최적화로 다른 인풋창과 높이 통일 */
-                line-height: 24px !important; /* 텍스트 정중앙 정렬 트래킹 */
+                padding: 8px 12px !important; 
+                line-height: 24px !important; 
                 box-sizing: border-box !important;
                 -webkit-appearance: none !important;
                 -moz-appearance: none !important;
@@ -412,6 +411,51 @@
         .et-cal-event-pill.green-pill { background-color: #e8f5e9; color: #43a047; }
         .et-cal-event-pill.done-pill { background-color: #f2f2f2; color: #a6a6a6; text-decoration: line-through; }
         
+        /* [요구사항 2번] 곧 마감 임박 블록 디자인 박스 정의 */
+        .urgent-todo-card {
+            background-color: var(--et-red-light);
+            border: 1px solid rgba(198, 41, 23, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .urgent-todo-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--et-red);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .urgent-todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.82rem;
+            color: #444;
+        }
+        .urgent-todo-item {
+            padding: 3px 0;
+            border-bottom: 1px dashed rgba(198, 41, 23, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .urgent-todo-item:last-child { border-bottom: none; }
+        
+        /* [요구사항 3번] 백업/복구 시스템 레이아웃 바 서식 */
+        .backup-restore-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--et-border);
+        }
+        .btn-backup { background-color: var(--et-dark); color: #fff; }
+        .btn-restore { background-color: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background-color: white; padding: 24px; border-radius: 20px; max-width: 450px; width: 85%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .modal-content h3 { margin-top: 0; border-bottom: 2px solid var(--et-border); padding-bottom: 10px; color: var(--et-red); font-size: 1.1rem; }
@@ -609,6 +653,11 @@
             <h1>할 일 목록</h1>
         </div>
 
+        <div class="urgent-todo-card" id="etUrgentTodoBlock">
+            <div class="urgent-todo-title">🚨 곧 마감 임박! (3일 이내 마감)</div>
+            <ul class="urgent-todo-list" id="etUrgentTodoContainer"></ul>
+        </div>
+
         <div class="et-cal-container">
             <div class="et-cal-top-control">
                 <button class="et-cal-year-badge" onclick="moveCalendarMonth(-1)">◀</button>
@@ -649,6 +698,12 @@
             <div class="todo-list-section-title" style="color:var(--et-muted);">지난 할 일</div>
             <div class="todo-scroll-viewport">
                 <ul class="todo-list" id="todoPastListContainer"></ul>
+            </div>
+
+            <div class="backup-restore-group">
+                <button class="btn btn-backup" onclick="exportAppDataToFile()">데이터 백업 (파일 저장)</button>
+                <button class="btn btn-restore" onclick="document.getElementById('etDataFileInput').click()">데이터 복구 (파일 읽기)</button>
+                <input type="file" id="etDataFileInput" style="display:none;" accept=".txt" onchange="importAppDataFromFile(event)">
             </div>
         </div>
     </div>
@@ -1439,12 +1494,25 @@
 
         const now = new Date();
         let currentCount = 0; let pastCount = 0;
+        
+        /* [요구사항 2번] 곧 마감 데이터 파싱 및 가시성 연출용 캐싱 어레이 */
+        let urgentHtml = '';
+        let hasUrgent = false;
 
         todoData.forEach((todo) => {
             let isPastDeadline = false;
             if(todo.deadline) {
                 const deadlineDate = new Date(todo.deadline);
                 if(deadlineDate < now) isPastDeadline = true;
+                
+                /* 3일 이내 (72시간) 검증 수식 계산 및 블록 삽입 */
+                const diffTime = deadlineDate - now;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                if(!todo.done && diffDays >= 0 && diffDays <= 3) {
+                    hasUrgent = true;
+                    let remainingText = diffDays < 1 ? `${Math.round(diffTime / (1000*60*60))}시간 남음` : `${Math.ceil(diffDays)}일 남음`;
+                    urgentHtml += `<li class="urgent-todo-item"><span>• ${todo.text}</span><strong style="color:var(--et-red);">${remainingText}</strong></li>`;
+                }
             }
 
             let metaLineHtml = '';
@@ -1496,6 +1564,15 @@
                 currentContainer.appendChild(wrapperLi); currentCount++;
             }
         });
+
+        /* 임박 위젯 동적 드롭다운 노출 트리거 */
+        const urgentBlock = document.getElementById('etUrgentTodoBlock');
+        if(hasUrgent) {
+            document.getElementById('etUrgentTodoContainer').innerHTML = urgentHtml;
+            urgentBlock.style.display = 'block';
+        } else {
+            urgentBlock.style.display = 'none';
+        }
 
         if(currentCount === 0) currentContainer.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:20px 0; font-size:0.9rem;">남은 할 일이 없습니다.</li>`;
         if(pastCount === 0) pastContainer.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:20px 0; font-size:0.9rem;">지난 할 일이 없습니다.</li>`;
@@ -1638,7 +1715,11 @@
                         }
 
                         const slotClass = `pill-slot-${s}`;
-                        cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};">${todo.text}</div>`;
+                        
+                        /* [요구사항 1번 해결] 해당 주차 내 완전히 일치하는 최초 진입점 바(isAbsoluteStart)에만 글자를 그리고, 주차 줄바꿈으로 넘어간 다음 일정 연장선 바에는 배경색상만 연출 */
+                        const textContent = isAbsoluteStart ? todo.text : '';
+                        
+                        cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};">${textContent}</div>`;
                     }
                 }
             }
@@ -1699,6 +1780,63 @@
             activeTodoInlineEditIndex = -1;
             renderTodoList();
         }
+    }
+
+    /* ─── [요구사항 3번] 앱 통합 입출력 로컬 덤프 파일 내보내기 엔진 스크립트 ─── */
+    function exportAppDataToFile() {
+        const backupObject = {
+            subjectDataGrad: subjectData,
+            todoDataGrad: todoData,
+            extraGradDataV2: JSON.parse(localStorage.getItem('extraGradDataV2')) || {}
+        };
+        
+        const dataStr = JSON.stringify(backupObject, null, 4);
+        const dataBlob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' });
+        const downloadLink = document.createElement('a');
+        
+        const now = new Date();
+        const dateStamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2);
+        
+        downloadLink.download = `학점계산기_백업데이터_${dateStamp}.txt`;
+        downloadLink.href = URL.createObjectURL(dataBlob);
+        downloadLink.click();
+        URL.revokeObjectURL(downloadLink.href);
+    }
+
+    /* ─── [요구사항 3번] 백업 텍스트 데이터 파싱 복구 엔진 스크립트 ─── */
+    function importAppDataFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (importedData.subjectDataGrad && importedData.todoDataGrad) {
+                    if (confirm('파일 데이터를 읽어왔습니다. 기존 등록 정보를 지우고 백업 데이터로 교체하시겠습니까?')) {
+                        subjectData = importedData.subjectDataGrad;
+                        todoData = importedData.todoDataGrad;
+                        
+                        localStorage.setItem('subjectDataGrad', JSON.stringify(subjectData));
+                        localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
+                        
+                        if (importedData.extraGradDataV2) {
+                            localStorage.setItem('extraGradDataV2', JSON.stringify(importedData.extraGradDataV2));
+                        }
+                        
+                        alert('데이터 복구가 성공적으로 완료되었습니다.');
+                        location.reload(); // 실시간 바인딩 갱신 처리
+                    }
+                } else {
+                    alert('유효한 백업 파일 형식이 아닙니다.');
+                }
+            } catch (err) {
+                alert('파일을 파싱하는 도중 오류가 발생했습니다. 올바른 텍스트 파일을 지정해 주세요.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // 다회성 초기화 처리
     }
 
     loadExtraRequirements();
