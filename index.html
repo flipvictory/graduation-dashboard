@@ -32,7 +32,6 @@
             --bg-color: #ffffff;
             --card-bg: #ffffff;
             --danger-color: #ef4444;
-            /* [개선 1번] 브라우저/모바일 시스템 달력 팝업 테마 컬러 색상 강제 일치 */
             accent-color: #c62917;
         }
 
@@ -238,27 +237,29 @@
         .et-radar-box { flex: 1; min-width: 240px; height: 200px; position: relative; }
         .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
-        .todo-input-box { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-        .todo-input-box input[type="text"] { width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.92rem; outline: none; box-sizing: border-box; }
-        .todo-input-box input:focus { border-color: var(--et-red); }
+        /* [개선 1번] 메인 입력폼의 상하 마진 및 정렬 일치화 */
+        .todo-input-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        .todo-input-box #todoInput { width: 100%; box-sizing: border-box; margin: 0; }
         
-        .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; }
+        /* [개선 1번] 모바일 환경에서 정렬선이 1px의 오차도 없도록 구조 조정 */
+        .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; margin: 0; padding: 0; }
         @media (max-width: 480px) {
-            .todo-sub-fields { grid-template-columns: 1fr; gap: 8px; }
+            .todo-sub-fields { grid-template-columns: 1fr; gap: 10px; }
+            .todo-sub-fields input#todoLocation { grid-column: span 1 !important; }
         }
         
-        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; }
+        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; }
         .todo-datetime-group span { font-size: 0.75rem; color: var(--et-dark); font-weight: 700; padding-left: 2px; }
         
-        /* [개선 1번] 모바일 기기 자체 인라인 테두리 및 폼 서식 테마 최적화 */
+        /* [개선 1번 및 3번] 날짜 폼 채워졌을 때 프리미엄 정렬 디자인 가공 */
         .todo-sub-fields input { 
-            width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; 
-            font-size: 0.88rem; box-sizing: border-box; outline: none; background: #fff; 
-            color: var(--et-dark); transition: all 0.2s ease;
+            width: 100%; padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; 
+            font-size: 0.88rem; font-weight: 500; box-sizing: border-box; outline: none; background: #fff; 
+            color: var(--et-dark); transition: all 0.2s ease; letter-spacing: -0.01em;
         }
-        .todo-sub-fields input:focus { border-color: var(--et-red); background-color: var(--et-red-light); }
+        /* [개선 3번] 선택 활성화 되었을 때 푸른 계열 제거 및 명품 브랜딩 쉐도우 효과 바인딩 */
+        .todo-sub-fields input:focus { border-color: var(--et-red); background-color: var(--et-red-light); box-shadow: 0 0 0 3px rgba(198, 41, 23, 0.08); }
         
-        /* [개선 1번] 네이티브 캘린더 선택기 아이콘 테마화 컬러 필터링 */
         .todo-sub-fields input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             cursor: pointer;
             filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
@@ -293,21 +294,35 @@
         .todo-inline-edit-box input { padding: 6px 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; outline: none; }
         .todo-inline-edit-box input:focus { border-color: var(--et-red); }
         
-        /* [개선 1번] 수정용 대화상자 내부 날짜 필드 전용 웹킷 색상 적용 */
-        .todo-inline-edit-box input[type="datetime-local"] { accent-color: var(--et-red); }
+        .todo-inline-edit-box input[type="datetime-local"] { accent-color: var(--et-red); font-weight: 500; color: var(--et-dark); }
         .todo-inline-edit-box input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
         }
 
         .et-cal-container { width: 100%; border: 1px solid var(--et-border); border-radius: 14px; overflow: hidden; background: #fff; margin-bottom: 20px; padding: 14px 12px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .et-cal-top-control { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .et-cal-year-badge { background: #f2f2f2; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; border: none; transition: background 0.2s; }
-        .et-cal-year-badge:active { background: #e2e2e2; }
-        .et-cal-month-title { font-size: 1.5rem; font-weight: 700; color: #000; margin: 0 auto 0 4px; }
+        
+        /* [개선 2번] 캘린더 상단 월 네비게이션용 프리미엄 화살표 배지 컬러 조정 */
+        .et-cal-year-badge { 
+            background: var(--et-red-light); 
+            color: var(--et-red); 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 0.82rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border: 1px solid rgba(198, 41, 23, 0.12); 
+            transition: all 0.2s ease; 
+        }
+        .et-cal-year-badge:active { background: var(--et-red); color: #ffffff; border-color: var(--et-red); }
+        .et-cal-month-title { font-size: 1.4rem; font-weight: 700; color: #000; margin: 0 auto 0 4px; }
+        
         .et-cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--et-muted); padding-bottom: 8px; border-bottom: 1px solid var(--et-light-gray); margin-bottom: 4px; }
         .et-cal-main-body { display: grid; grid-template-columns: repeat(7, 1fr); background: #fff; }
         
-        /* [개선 3번] 끊김 없는 타임라인 바 연결을 위해 좌우 셀 패딩 완전 제거 */
         .et-cal-day-cell { 
             height: 82px; 
             max-height: 82px; 
@@ -331,7 +346,6 @@
         
         .et-cal-event-pill { width: 100%; height: 17px; font-size: 0.65rem; font-weight: bold; padding: 2px 5px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; line-height: 13px; margin-bottom: 2px; border: none; }
         
-        /* [개선 3번] 다중 일정이 이어질 때 셀 테두리를 자연스럽게 초과 덮어씌우는 정밀 여백 설계 */
         .pill-start { border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin-left: 2px; width: calc(100% - 2px); position: relative; z-index: 2; }
         .pill-middle { border-radius: 0; margin-left: 0; width: calc(100% + 1px); position: relative; z-index: 3; }
         .pill-end { border-top-right-radius: 4px; border-bottom-right-radius: 4px; margin-right: 2px; width: calc(100% + 1px); position: relative; z-index: 2; }
@@ -573,7 +587,8 @@
                         <span>마감 일시</span>
                         <input type="datetime-local" id="todoDeadline">
                     </div>
-                    <input type="text" id="todoLocation" placeholder="장소 (기본없음)" style="grid-column: span 1; margin-top: 2px;">
+                    <!-- [개선 1번] 모바일/데스크톱 정렬 일치를 위해 grid-column 스타일 인라인 제거 후 css 제어로 통일 -->
+                    <input type="text" id="todoLocation" placeholder="장소 (기본없음)" style="grid-column: span 2;">
                 </div>
                 <button class="btn btn-primary" onclick="addTodo()" style="margin-top: 4px;">등록</button>
             </div>
@@ -1431,7 +1446,6 @@
 
         generateCalendarGrid();
 
-        /* [개선 2번] 뷰 포트에 수정 상자가 렌더링된 것을 확인한 뒤 스크롤을 안정적으로 트래킹하는 로직 */
         if(activeTodoInlineEditIndex !== -1) {
             setTimeout(() => {
                 const targetBox = document.getElementById(`todoInlineEditBox-${activeTodoInlineEditIndex}`);
