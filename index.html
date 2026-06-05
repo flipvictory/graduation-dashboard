@@ -169,7 +169,6 @@
         .course-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; font-weight: 500; color: #000; }
         .course-labels-wrapper { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
         
-        /* ─── 과목 우측 특수 구분 배지 새 디자인 입히기 ─── */
         .badge {
             font-size: 0.68rem;
             font-weight: 700;
@@ -835,6 +834,15 @@
         
         activeInlineEditIndex = -1;
         updateDashboard();
+    }
+
+    /* ─── 과목 삭제 처리 핵심 기능 기계 ─── */
+    function deleteSubject(idx) {
+        if(confirm('이 과목의 성적을 완전히 삭제하시겠습니까?')) {
+            subjectData.splice(idx, 1);
+            activeInlineEditIndex = -1;
+            updateDashboard();
+        }
     }
 
     function toggleTodoInlineEditPanel(id, event) {
