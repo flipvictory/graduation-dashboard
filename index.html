@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -160,8 +161,10 @@
         .et-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
         .et-table th { font-size: 0.82rem; color: var(--et-muted); font-weight: 400; padding: 8px 4px; border-bottom: 1px solid var(--et-border); }
         .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; }
-        .draggable-tr { transition: background-color 0.2s; }
-        .draggable-tr.dragging { opacity: 0.4; background-color: var(--et-red-light); }
+        
+        /* 모바일 꾹 누르기 활성화 시 시각적 스타일 피드백 효과 */
+        .draggable-tr { transition: background-color 0.2s; user-select: none; -webkit-user-select: none; }
+        .draggable-tr.dragging { opacity: 0.5; background-color: var(--et-red-light) !important; border: 1px dashed var(--et-red); }
         
         .et-col-name { padding-left: 6px !important; }
         .course-title-wrapper { display: flex; align-items: center; max-width: 100%; overflow: hidden; }
@@ -199,7 +202,6 @@
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; }
         .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
@@ -233,22 +235,8 @@
         .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        /* 📱 듀얼 그래프 반응형 구조: 세로 정렬 시 겹침 현상 완벽 방지 리팩토링 */
-        .et-dual-charts-container { 
-            display: flex; 
-            row-gap: 35px; /* 모바일에서 위아래 스택 배치 시 텍스트 겹침을 원천 차단하는 세로 여백 */
-            column-gap: 12px; 
-            justify-content: space-around; 
-            flex-wrap: wrap; 
-            margin: 10px 0 20px 0; 
-            padding-bottom: 15px; 
-        }
-        .et-radar-box { 
-            flex: 1; 
-            min-width: 240px; 
-            height: 200px; /* 차트 최외곽 점 라벨이 제목 텍스트를 침범하지 않도록 안정 폭 상향 */
-            position: relative; 
-        }
+        .et-dual-charts-container { display: flex; row-gap: 35px; column-gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0 20px 0; padding-bottom: 15px; }
+        .et-radar-box { flex: 1; min-width: 240px; height: 200px; position: relative; }
         .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
         .modal-overlay {
@@ -272,6 +260,7 @@
 
 <div class="container">
     
+    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -395,6 +384,7 @@
     </div>
 
 
+    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
             <h1>졸업사정표</h1>
@@ -417,7 +407,7 @@
                     <canvas id="gradAreaRadarChart"></canvas>
                 </div>
             </div>
-            </div>
+        </div>
 
         <div class="card">
             <h2>졸업 요건 현황</h2>
@@ -449,7 +439,7 @@
         </div>
 
         <div class="card">
-            <h2> 영역별 이수 상세 현황</h2>
+            <h2>영역별 이수 상세 현황</h2>
             <div id="requirementBars"></div>
         </div>
     </div>
@@ -875,10 +865,16 @@
         bindEtDragAndDrop(); 
     }
 
+    // ─── 1. 마우스 및 모바일 롱 프레스 터치 대응 하이브리드 정렬 엔진 ───
     function bindEtDragAndDrop() {
         const tbody = document.getElementById('etSubjectTableBody');
         let dragEl = null;
+        let touchTimeout = null;
+        let isTouchDragging = false;
+        let startY = 0;
+        let startX = 0;
 
+        // PC 데스크톱 마우스 인터랙션 가동
         tbody.querySelectorAll('.draggable-tr').forEach(row => {
             row.addEventListener('dragstart', () => {
                 dragEl = row;
@@ -886,14 +882,7 @@
             });
             row.addEventListener('dragend', () => {
                 row.classList.remove('dragging');
-                const currentRows = Array.from(tbody.querySelectorAll('.draggable-tr'));
-                const currentIndices = currentRows.map(r => parseInt(r.getAttribute('data-index')));
-                
-                const nonSemData = subjectData.filter(item => item.semester !== activeSemester);
-                const reorderedSemData = currentIndices.map(idx => subjectData[idx]);
-
-                subjectData = [...nonSemData, ...reorderedSemData];
-                updateDashboard();
+                finalizeReorder();
             });
         });
 
@@ -906,6 +895,73 @@
                 else tbody.insertBefore(draggable, afterElement);
             }
         });
+
+        // 스마트폰 모바일 0.4초 롱 프레스(꾹 누르기) 대응 터치 인터랙션 엔진
+        tbody.querySelectorAll('.draggable-tr').forEach(row => {
+            row.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                startY = touch.clientY;
+                startX = touch.clientX;
+                dragEl = row;
+
+                touchTimeout = setTimeout(() => {
+                    isTouchDragging = true;
+                    row.classList.add('dragging');
+                    // 지원 기기일 경우 롱 프레스 작동 감지 haptic 피드백 진동 발생
+                    if (navigator.vibrate) navigator.vibrate(40);
+                }, 400); 
+            }, { passive: true });
+
+            row.addEventListener('touchmove', (e) => {
+                const touch = e.touches[0];
+                
+                if (!isTouchDragging) {
+                    // 롱프레스 타이머 이전에 스크롤 등을 진행할 경우 입력 예외 무력화 취소
+                    if (Math.abs(touch.clientY - startY) > 8 || Math.abs(touch.clientX - startX) > 8) {
+                        clearTimeout(touchTimeout);
+                    }
+                    return;
+                }
+
+                // 롱프레스 드래그 정렬 모드 시에 화면 페이지가 스크롤되는 것을 물리 차단
+                if (e.cancelable) e.preventDefault();
+
+                const afterElement = getDragAfterElement(tbody, touch.clientY);
+                if (dragEl && dragEl.parentNode === tbody) {
+                    if (afterElement == null) tbody.appendChild(dragEl);
+                    else tbody.insertBefore(dragEl, afterElement);
+                }
+            }, { passive: false });
+
+            row.addEventListener('touchend', () => {
+                clearTimeout(touchTimeout);
+                if (isTouchDragging) {
+                    row.classList.remove('dragging');
+                    isTouchDragging = false;
+                    finalizeReorder();
+                }
+            });
+            
+            row.addEventListener('touchcancel', () => {
+                clearTimeout(touchTimeout);
+                if (isTouchDragging) {
+                    row.classList.remove('dragging');
+                    isTouchDragging = false;
+                    finalizeReorder();
+                }
+            });
+        });
+
+        function finalizeReorder() {
+            const currentRows = Array.from(tbody.querySelectorAll('.draggable-tr'));
+            const currentIndices = currentRows.map(r => parseInt(r.getAttribute('data-index')));
+            
+            const nonSemData = subjectData.filter(item => item.semester !== activeSemester);
+            const reorderedSemData = currentIndices.map(idx => subjectData[idx]);
+
+            subjectData = [...nonSemData, ...reorderedSemData];
+            updateDashboard();
+        }
     }
 
     function getDragAfterElement(container, y) {
@@ -1115,7 +1171,7 @@
 </script>
 
 <script>
-    // 강제 서비스워커 청소부 스크립트 이식 (캐시 롤백 영구 무력화)
+    // 서비스워커 완전 파괴 스크립트 (모바일 웹 뷰 캐시 꼬임 영구 원천 방어)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
             for(let registration of registrations) {
