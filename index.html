@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- ─── [캐시 방지] 브라우저가 HTML 자체를 캐싱하지 못하도록 강제 제어 ─── -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#c62917">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -160,28 +165,10 @@
         .draggable-tr { transition: background-color 0.2s; }
         .draggable-tr.dragging { opacity: 0.4; background-color: var(--et-red-light); }
         
-        /* ─── 1. 과목명 말줄임표 및 한 줄 유지 스타일 규격 ─── */
         .et-col-name { padding-left: 6px !important; }
-        .course-title-wrapper {
-            display: flex;
-            align-items: center;
-            max-width: 100%;
-            overflow: hidden;
-        }
-        .course-name-text {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex-shrink: 1;
-            font-weight: 500;
-            color: #000;
-        }
-        .course-labels-wrapper {
-            display: flex;
-            gap: 2px;
-            flex-shrink: 0;
-            margin-left: 4px;
-        }
+        .course-title-wrapper { display: flex; align-items: center; max-width: 100%; overflow: hidden; }
+        .course-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; font-weight: 500; color: #000; }
+        .course-labels-wrapper { display: flex; gap: 2px; flex-shrink: 0; margin-left: 4px; }
         
         .et-col-center { text-align: center; color: #444; }
         
@@ -204,7 +191,6 @@
             content: '✓'; color: #fff; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
 
-        /* ─── 2. 인라인 확장 실시간 편집 패널 그리드 확장 ─── */
         .inline-edit-row { background-color: #fafafa !important; }
         .inline-edit-box { display: flex; flex-direction: column; gap: 8px; padding: 6px 4px; }
         .inline-edit-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
@@ -249,26 +235,9 @@
         .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        /* ─── 3. 비교과 & 교과 레이더 차트 반응형 컨테이너 패널 ─── */
-        .et-dual-charts-container {
-            display: flex;
-            gap: 12px;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            margin: 10px 0;
-        }
-        .et-radar-box {
-            flex: 1;
-            min-width: 240px;
-            height: 180px;
-            position: relative;
-        }
-        .et-radar-title {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 6px;
-        }
+        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0; }
+        .et-radar-box { flex: 1; min-width: 240px; height: 180px; position: relative; }
+        .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -291,6 +260,7 @@
 
 <div class="container">
     
+    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -414,6 +384,7 @@
     </div>
 
 
+    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
             <h1>졸업 사정 요건 점검</h1>
@@ -642,7 +613,6 @@
         updateDashboard();
     }
 
-    // ─── 2. 인라인 확장 데이터 필드 전체 저장 프로세서 ───
     function saveInlineFields(idx) {
         const nameVal = document.getElementById(`inlineName-${idx}`).value.trim();
         const creditVal = parseInt(document.getElementById(`inlineCredits-${idx}`).value);
@@ -830,7 +800,6 @@
                 else if(sub.isRetake === '재수강') appendLabels += ` <span class="badge badge-retake">재수강</span>`;
                 if(sub.isEnglish === '영어') appendLabels += ` <span class="badge badge-eng">영강</span>`;
 
-                // ─── 1. 과목명 말줄임 처리 및 배지 플렉스 결합형 UI 구조 교체 ───
                 etTbody.innerHTML += `
                     <tr class="draggable-tr" draggable="true" data-index="${origIdx}" onclick="toggleInlineEditPanel(${origIdx}, event)">
                         <td class="et-col-name">
@@ -850,7 +819,6 @@
                     </tr>
                 `;
 
-                // ─── 2. 모든 특성 수정 셀렉트 폼 추가 배치 확장 ───
                 if(activeInlineEditIndex === origIdx) {
                     etTbody.innerHTML += `
                         <tr class="inline-edit-row">
@@ -942,14 +910,12 @@
     }
 
     function bindGraduationViewElements(hasSeminar, approvedEnglishCount, totalCredits, earnedRequirements) {
-        // 1. 학부세미나
         const barSeminar = document.getElementById('barSeminar'); const boardSeminar = document.getElementById('boardSeminar'); const titleSeminar = document.getElementById('titleSeminar');
         if(hasSeminar) {
             barSeminar.style.width = "100%"; barSeminar.className = "status-gauge-fill fill-pass"; boardSeminar.innerText = "100% (Pass)"; boardSeminar.className = "status-indicator text-pass-color"; titleSeminar.className = "mission-title text-pass-color";
         } else {
             barSeminar.style.width = "0%"; barSeminar.className = "status-gauge-fill fill-fail"; boardSeminar.innerText = "0%"; boardSeminar.className = "status-indicator text-fail-color"; titleSeminar.className = "mission-title text-fail-color";
         }
-        // 2. 인권과 성평등 교육
         const genderCount = document.getElementById('genderEduCount') ? parseInt(document.getElementById('genderEduCount').value) : 0;
         const barGender = document.getElementById('barGender'); const boardGender = document.getElementById('boardGender'); const titleGender = document.getElementById('titleGender'); const genderPct = Math.round((genderCount / 4) * 100);
         barGender.style.width = `${genderPct}%`;
@@ -958,7 +924,6 @@
         } else {
             barGender.className = "status-gauge-fill fill-fail"; boardGender.innerText = `${genderPct}%`; boardGender.className = "status-indicator text-fail-color"; titleGender.className = "mission-title text-fail-color";
         }
-        // 3. 영어강의 이수
         const barEnglish = document.getElementById('barEnglish'); const boardEnglishCount = document.getElementById('boardEnglishCount'); const titleEnglish = document.getElementById('titleEnglish'); const engPct = Math.min(100, Math.round((approvedEnglishCount / 5) * 100));
         barEnglish.style.width = `${engPct}%`;
         if(approvedEnglishCount >= 5) {
@@ -966,7 +931,6 @@
         } else {
             barEnglish.className = "status-gauge-fill fill-fail"; boardEnglishCount.innerText = `${engPct}%`; boardEnglishCount.className = "status-indicator text-fail-color"; titleEnglish.className = "mission-title text-fail-color";
         }
-        // 4. 공인영어성적 추가 바인딩
         const engStatus = document.getElementById('englishStatus') ? document.getElementById('englishStatus').value : '미제출';
         const barEnglishTest = document.getElementById('barEnglishTest'); const boardEnglishTest = document.getElementById('boardEnglishTest'); const titleEnglishTest = document.getElementById('titleEnglishTest');
         if(engStatus === '패스') {
@@ -974,7 +938,6 @@
         } else {
             barEnglishTest.style.width = "0%"; barEnglishTest.className = "status-gauge-fill fill-fail"; boardEnglishTest.innerText = "0%"; boardEnglishTest.className = "status-indicator text-fail-color"; titleEnglishTest.className = "mission-title text-fail-color";
         }
-        // 5. 졸업논문 추가 바인딩
         const thesisStatus = document.getElementById('thesisStatus') ? document.getElementById('thesisStatus').value : '미제출';
         const barThesis = document.getElementById('barThesis'); const boardThesis = document.getElementById('boardThesis'); const titleThesis = document.getElementById('titleThesis');
         if(thesisStatus === '패스') {
@@ -986,7 +949,6 @@
         const barContainer = document.getElementById('requirementBars');
         barContainer.innerHTML = '';
         
-        // 다각형 영역 그래프 매핑용 이수 비율 데이터 가공 배열 생성
         let areaRadarDataset = [];
         Object.keys(gradRequirements).forEach(key => {
             const req = gradRequirements[key]; const earned = earnedRequirements[key]; const pct = Math.min(100, Math.round((earned / req) * 100));
@@ -1071,9 +1033,7 @@
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
                 scales: {
                     r: {
                         angleLines: { display: true, color: '#eef0f2' },
@@ -1086,7 +1046,6 @@
             }
         });
 
-        // ─── 3. 교과 영역별 이수 칠각형 레이더 밸런스 차트 동적 셋업 구문 ───
         const ctxAreaGrad = document.getElementById('gradAreaRadarChart').getContext('2d');
         if (gradAreaRadarChart) gradAreaRadarChart.destroy();
         gradAreaRadarChart = new Chart(ctxAreaGrad, {
@@ -1103,9 +1062,7 @@
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
                 scales: {
                     r: {
                         angleLines: { display: true, color: '#eef0f2' },
@@ -1146,6 +1103,17 @@
     loadExtraRequirements();
     initFormAndTabs();
     updateDashboard();
+</script>
+
+<script>
+    // ─── [캐시 방지] 서비스 워커 등록 구문에 고유 버전(v=시간값)을 주입하여 강제 업데이트 처리 ───
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js?v=' + Date.now())
+          .then(reg => { console.log('PWA 최신 버전 동기화 완료', reg); })
+          .catch(err => { console.log('PWA 동기화 실패', err); });
+      });
+    }
 </script>
 </body>
 </html>
