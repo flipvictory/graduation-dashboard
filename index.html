@@ -375,7 +375,7 @@
             position: relative; 
             overflow: visible; 
         }
-        .et-cal-date-num { font-size: 0.8rem; font-weight: 700; color: #000; margin-bottom: 4px; align-self: center; z-index: 5; position: relative; }
+        .et-cal-date-num { font-size: 0.8rem; font-weight: 700; color: #000; margin-bottom: 2px; align-self: center; z-index: 5; position: relative; }
         .et-cal-day-cell.other-month .et-cal-date-num { color: #e0e0e0; font-weight: 400; }
         .et-cal-day-cell.sun .et-cal-date-num { color: #e53e3e; }
         .et-cal-day-cell.sat .et-cal-date-num { color: #3182ce; }
@@ -383,24 +383,28 @@
         .et-cal-day-cell.today-focus { background-color: #fffafb; }
         .et-cal-day-cell.today-focus .et-cal-date-num { background: var(--et-red); color: #fff !important; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-size: 0.72rem; display: inline-block; }
         
+        /* [요구사항 3번] 달력 내부 일정 띠 클릭 유도 핸들 커서 지정 */
         .et-cal-event-pill { 
             position: absolute;
-            height: 17px; 
-            font-size: 0.65rem; 
+            height: 15px; 
+            font-size: 0.63rem; 
             font-weight: bold; 
-            padding: 2px 5px; 
+            padding: 1px 5px; 
             box-sizing: border-box; 
             overflow: hidden; 
             text-overflow: ellipsis; 
             white-space: nowrap; 
             text-align: left; 
-            line-height: 13px; 
+            line-height: 12px; 
             border: none;
             z-index: 10;
+            cursor: pointer;
         }
         
-        .pill-slot-0 { top: 24px; }
-        .pill-slot-1 { top: 43px; }
+        /* [요구사항 2번] 하루 최대 3개 배치를 위해 세로 마운트 좌표 정밀 압착 조정 */
+        .pill-slot-0 { top: 21px; }
+        .pill-slot-1 { top: 39px; }
+        .pill-slot-2 { top: 57px; }
 
         .et-cal-event-pill.color-pill-0 { background-color: #ffebee; color: var(--et-red); }
         .et-cal-event-pill.color-pill-1 { background-color: #e3f2fd; color: #1e88e5; }
@@ -411,7 +415,6 @@
         .et-cal-event-pill.green-pill { background-color: #e8f5e9; color: #43a047; }
         .et-cal-event-pill.done-pill { background-color: #f2f2f2; color: #a6a6a6; text-decoration: line-through; }
         
-        /* [요구사항 2번] 곧 마감 임박 블록 디자인 박스 정의 */
         .urgent-todo-card {
             background-color: var(--et-red-light);
             border: 1px solid rgba(198, 41, 23, 0.2);
@@ -444,7 +447,6 @@
         }
         .urgent-todo-item:last-child { border-bottom: none; }
         
-        /* [요구사항 3번] 백업/복구 시스템 레이아웃 바 서식 */
         .backup-restore-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -453,6 +455,7 @@
             padding-top: 15px;
             border-top: 1px dashed var(--et-border);
         }
+        /* [요구사항 1번] 버튼 내부 괄호 서식 완전 제외 마감 */
         .btn-backup { background-color: var(--et-dark); color: #fff; }
         .btn-restore { background-color: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
 
@@ -541,7 +544,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="grade">성적</label>
+                    <label soul="grade">성적</label>
                     <select id="grade" required>
                         <option value="A+">A+</option>
                         <option value="A">A</option>
@@ -701,8 +704,8 @@
             </div>
 
             <div class="backup-restore-group">
-                <button class="btn btn-backup" onclick="exportAppDataToFile()">데이터 백업 (파일 저장)</button>
-                <button class="btn btn-restore" onclick="document.getElementById('etDataFileInput').click()">데이터 복구 (파일 읽기)</button>
+                <button class="btn btn-backup" onclick="exportAppDataToFile()">데이터 백업</button>
+                <button class="btn btn-restore" onclick="document.getElementById('etDataFileInput').click()">데이터 복구</button>
                 <input type="file" id="etDataFileInput" style="display:none;" accept=".txt" onchange="importAppDataFromFile(event)">
             </div>
         </div>
@@ -907,6 +910,12 @@
 
     function toggleTodoInlineEditPanel(id, event) {
         if(event.target.closest('.et-chk-indicator') || event.target.tagName === 'BUTTON') return;
+        activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
+        renderTodoList();
+    }
+
+    /* [요구사항 3번] 달력 내부 일정 클릭 시 외부 인터페이스 트리거 및 인라인 레이아웃 동기화 작동기 */
+    function toggleTodoInlineEditPanelFromCalendar(id) {
         activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
         renderTodoList();
     }
@@ -1495,7 +1504,6 @@
         const now = new Date();
         let currentCount = 0; let pastCount = 0;
         
-        /* [요구사항 2번] 곧 마감 데이터 파싱 및 가시성 연출용 캐싱 어레이 */
         let urgentHtml = '';
         let hasUrgent = false;
 
@@ -1505,7 +1513,6 @@
                 const deadlineDate = new Date(todo.deadline);
                 if(deadlineDate < now) isPastDeadline = true;
                 
-                /* 3일 이내 (72시간) 검증 수식 계산 및 블록 삽입 */
                 const diffTime = deadlineDate - now;
                 const diffDays = diffTime / (1000 * 60 * 60 * 24);
                 if(!todo.done && diffDays >= 0 && diffDays <= 3) {
@@ -1565,7 +1572,6 @@
             }
         });
 
-        /* 임박 위젯 동적 드롭다운 노출 트리거 */
         const urgentBlock = document.getElementById('etUrgentTodoBlock');
         if(hasUrgent) {
             document.getElementById('etUrgentTodoContainer').innerHTML = urgentHtml;
@@ -1667,7 +1673,8 @@
 
             cell.innerHTML = `<span class="et-cal-date-num">${dayObj.date.getDate()}</span>`;
 
-            for(let s = 0; s < 2; s++) {
+            /* [요구사항 2번 가동] s 루프 제한 범위를 2에서 3으로 확장하여 동시에 최대 3개 일정 마운트 수용 */
+            for(let s = 0; s < 3; s++) {
                 const todo = daySlots[i][s];
                 if(todo) {
                     let rowStart = Math.floor(i / 7) * 7;
@@ -1716,10 +1723,11 @@
 
                         const slotClass = `pill-slot-${s}`;
                         
-                        /* [요구사항 1번 해결] 해당 주차 내 완전히 일치하는 최초 진입점 바(isAbsoluteStart)에만 글자를 그리고, 주차 줄바꿈으로 넘어간 다음 일정 연장선 바에는 배경색상만 연출 */
+                        /* [요구사항 1번 해결] 바의 종류와 무관하게 실제 태스크의 절대 기점(isAbsoluteStart)에만 텍스트를 할당하도록 픽스 */
                         const textContent = isAbsoluteStart ? todo.text : '';
                         
-                        cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};">${textContent}</div>`;
+                        /* [요구사항 3번 해결] 캘린더 피커 내부에 클릭 핸들러(onclick)를 이식하여 즉각적인 할 일 데이터 폼 포커싱 수용 */
+                        cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};" onclick="toggleTodoInlineEditPanelFromCalendar(${todo.id})">${textContent}</div>`;
                     }
                 }
             }
@@ -1782,7 +1790,6 @@
         }
     }
 
-    /* ─── [요구사항 3번] 앱 통합 입출력 로컬 덤프 파일 내보내기 엔진 스크립트 ─── */
     function exportAppDataToFile() {
         const backupObject = {
             subjectDataGrad: subjectData,
@@ -1803,7 +1810,6 @@
         URL.revokeObjectURL(downloadLink.href);
     }
 
-    /* ─── [요구사항 3번] 백업 텍스트 데이터 파싱 복구 엔진 스크립트 ─── */
     function importAppDataFromFile(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1826,7 +1832,7 @@
                         }
                         
                         alert('데이터 복구가 성공적으로 완료되었습니다.');
-                        location.reload(); // 실시간 바인딩 갱신 처리
+                        location.reload(); 
                     }
                 } else {
                     alert('유효한 백업 파일 형식이 아닙니다.');
@@ -1836,7 +1842,7 @@
             }
         };
         reader.readAsText(file);
-        event.target.value = ''; // 다회성 초기화 처리
+        event.target.value = ''; 
     }
 
     loadExtraRequirements();
