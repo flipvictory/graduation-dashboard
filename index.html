@@ -44,6 +44,12 @@
             align-items: center;
         }
 
+        /* 모바일 화면 여백 최적화 */
+        @media (max-width: 576px) {
+            body { padding: 20px 12px; }
+            header h1 { font-size: 1.8rem !important; }
+        }
+
         .container {
             max-width: 1200px;
             width: 100%;
@@ -157,33 +163,61 @@
         .btn-danger:hover { background-color: var(--danger-color); color: white; }
         .btn-close { background-color: #64748b; color: white; width: 100%; margin-top: 15px; }
 
-        .table-wrapper { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; } 
+        /* 📱 테이블 모바일 겹침 예방 및 에브리타임 스타일 최적화 리팩토링 */
+        .table-wrapper { 
+            overflow-x: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            text-align: left; 
+            min-width: 580px; /* 가로 공간 부족 시 겹치지 않고 스크롤되도록 안정적 최저폭 지정 */
+        } 
         
-        th, td { padding: 12px 14px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; white-space: nowrap; }
-        th:nth-child(1), td:nth-child(1) { width: 25%; }
-        th:nth-child(2), td:nth-child(2) { width: 18%; }
-        th:nth-child(3), td:nth-child(3) { width: 18%; }
-        th:nth-child(4), td:nth-child(4) { width: 19%; }
-        th:nth-child(5), td:nth-child(5) { width: 20%; }
+        th, td { 
+            padding: 14px 10px; 
+            border-bottom: 1px solid var(--border-color); 
+            font-size: 0.92rem; 
+            white-space: nowrap; 
+        }
+        th:nth-child(1), td:nth-child(1) { width: 32%; }
+        th:nth-child(2), td:nth-child(2) { width: 17%; text-align: center; }
+        th:nth-child(3), td:nth-child(3) { width: 17%; text-align: center; }
+        th:nth-child(4), td:nth-child(4) { width: 17%; text-align: center; }
+        th:nth-child(5), td:nth-child(5) { width: 17%; text-align: center; }
 
-        .semester-row { cursor: pointer; }
+        .semester-row { cursor: pointer; transition: background-color 0.15s; }
         .semester-row:hover { background-color: #f8fafc; }
-        .semester-row::after { content: ' ▼'; font-size: 0.75rem; color: var(--text-muted); }
+        /* 깨짐을 유발하던 tr::after 대신 첫 번째 td 내부에 화살표가 붙도록 수정 */
+        .semester-row td:first-child::after { content: ' ▼'; font-size: 0.75rem; color: var(--text-muted); vertical-align: middle; }
+        
         .detail-row { display: none; background-color: #fcfdfe; }
         .detail-row.open { display: table-row; }
         
-        .inner-table { width: 100%; margin: 5px 0 15px 0; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; table-layout: fixed; }
-        .inner-table th, .inner-table td { padding: 10px 8px; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+        .inner-table { 
+            width: 100%; 
+            margin: 8px 0 20px 0; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 12px; 
+            overflow: hidden; 
+        }
+        .inner-table th, .inner-table td { 
+            padding: 12px 10px; 
+            font-size: 0.88rem; 
+            border-bottom: 1px solid #f1f5f9; 
+            white-space: nowrap; 
+        }
         
-        .inner-table th:nth-child(1), .inner-table td:nth-child(1) { width: auto; max-width: 0; } 
-        .inner-table th:nth-child(2), .inner-table td:nth-child(2) { width: 75px; text-align: center; }  
-        .inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 55px; text-align: center; }  
-        .inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 50px; text-align: center; }  
-        .inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 110px; text-align: right; }  
+        /* 내부 상세 과목 테이블 컬럼 너비 조정 */
+        .inner-table th:nth-child(1), .inner-table td:nth-child(1) { width: auto; white-space: normal; word-break: keep-all; } 
+        .inner-table th:nth-child(2), .inner-table td:nth-child(2) { width: 85px; text-align: center; }  
+        .inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 65px; text-align: center; }  
+        .inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 55px; text-align: center; }  
+        .inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 120px; text-align: right; }  
 
-        .course-title-cell { display: flex; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }
-        .course-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+        .course-title-cell { display: flex; align-items: center; white-space: normal; word-break: break-all; width: 100%; }
+        .course-name-text { flex: 1; min-width: 0; font-weight: 500; }
 
         .replaced-course { color: var(--text-muted); opacity: 0.45; background-color: #f8fafc; }
         .replaced-course strong { text-decoration: line-through; } 
@@ -349,7 +383,7 @@
                 </div>
             </div>
 
-            <!-- 🛠️ 필수 요건 패스 현황판 (공인영어성적, 졸업논문 통 그래프 추가 연동 완료) -->
+            <!-- 🛠️ 필수 요건 패스 현황판 -->
             <div class="card">
                 <h2>필수 요건 패스 현황</h2>
                 
@@ -703,7 +737,6 @@
         const gradPercent = Math.min(100, Math.round((totalCredits / 130) * 100));
         document.getElementById('gradPercent').innerText = `${gradPercent}%`;
 
-        // 🛠️ [실시간 게이지 통 바인딩 스크립트 엔진]
         // 1. 학부세미나
         const barSeminar = document.getElementById('barSeminar');
         const boardSeminar = document.getElementById('boardSeminar');
@@ -751,7 +784,7 @@
             titleEnglish.className = "mission-title text-fail-color";
         }
 
-        // 🛠️ 4. 공인영어성적 추가 바인딩
+        // 4. 공인영어성적 추가 바인딩
         const engStatus = document.getElementById('englishStatus') ? document.getElementById('englishStatus').value : '미제출';
         const barEnglishTest = document.getElementById('barEnglishTest');
         const boardEnglishTest = document.getElementById('boardEnglishTest');
@@ -766,7 +799,7 @@
             titleEnglishTest.className = "mission-title text-fail-color";
         }
 
-        // 🛠️ 5. 졸업논문 추가 바인딩
+        // 5. 졸업논문 추가 바인딩
         const thesisStatus = document.getElementById('thesisStatus') ? document.getElementById('thesisStatus').value : '미제출';
         const barThesis = document.getElementById('barThesis');
         const boardThesis = document.getElementById('boardThesis');
@@ -829,8 +862,8 @@
                         <td style="text-align: center;">${sub.credits}학점</td>
                         <td style="text-align: center;"><span class="grade-text">${sub.grade}</span></td>
                         <td style="text-align: right;">
-                            <button class="btn" style="border: 1px solid var(--border-color); color:var(--text-main); margin-right:5px;" onclick="startEdit(${origIdx})">수정</button>
-                            <button class="btn btn-danger" onclick="deleteSubject(${origIdx})">삭제</button>
+                            <button class="btn" style="border: 1px solid var(--border-color); color:var(--text-main); margin-right:5px; padding: 4px 8px;" onclick="startEdit(${origIdx})">수정</button>
+                            <button class="btn btn-danger" style="padding: 4px 8px;" onclick="deleteSubject(${origIdx})">삭제</button>
                         </td>
                     </tr>
                 `;
@@ -844,9 +877,13 @@
                 trDetail.classList.add('open');
             }
 
-            trDetail.innerHTML = `<td colspan="5" style="padding: 0 20px;"><table class="inner-table"><thead><tr><th>과목명</th><th>이수구분</th><th>학점</th><th>성적</th><th style="text-align:right;">관리</th></tr></thead><tbody class="drag-zone">${innerRowsHtml}</tbody></table></td>`;
+            trDetail.innerHTML = `<td colspan="5" style="padding: 0 10px;"><table class="inner-table"><thead><tr><th>과목명</th><th>이수구분</th><th>학점</th><th>성적</th><th style="text-align:right;">관리</th></tr></thead><tbody class="drag-zone">${innerRowsHtml}</tbody></table></td>`;
 
-            trSub.addEventListener('click', () => toggleDetailRow(trId));
+            trSub.addEventListener('click', function(e) {
+                if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'A') {
+                    toggleDetailRow(trId);
+                }
+            });
             tbody.appendChild(trSub);
             tbody.appendChild(trDetail);
         });
