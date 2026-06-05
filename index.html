@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -225,7 +226,6 @@
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
         .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
@@ -270,13 +270,40 @@
         .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; margin: 0; padding: 0; }
         .todo-sub-fields input#todoLocation { grid-column: span 2; width: 100% !important; box-sizing: border-box; }
         
+        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; min-width: 0; }
+        .todo-datetime-group span { font-size: 0.75rem; color: var(--et-dark); font-weight: 700; padding-left: 2px; }
+        
+        .todo-sub-fields input, .todo-inline-edit-box input { 
+            width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; 
+            font-size: 0.88rem; font-weight: 500; box-sizing: border-box; outline: none; background: #fff; 
+            color: var(--et-dark); transition: all 0.2s ease; letter-spacing: -0.01em;
+        }
+        .todo-sub-fields input:focus, .todo-inline-edit-box input:focus { border-color: var(--et-red); background-color: var(--et-red-light); box-shadow: 0 0 0 3px rgba(198, 41, 23, 0.08); }
+        
+        .todo-sub-fields input[type="datetime-local"], .todo-inline-edit-box input[type="datetime-local"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .todo-sub-fields input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        .todo-inline-edit-box input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
+        }
+
+        /* ─── [image_6fa214.png 버그 픽스] 모바일 환경 레이아웃 압착 리셋 ─── */
+        .todo-inline-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; box-sizing: border-box; }
+
         @media (max-width: 480px) {
             .todo-sub-fields { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
             .todo-sub-fields input#todoLocation { width: 100% !important; }
             
-            .todo-datetime-group { width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; }
-            
-            .todo-sub-fields input[type="datetime-local"] { 
+            /* 수정 모드 전용 내부 컨테이너 그리드 해제 및 1열 스트레칭 구조 전환 */
+            .todo-inline-edit-grid { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
+
+            .todo-sub-fields input[type="datetime-local"],
+            .todo-inline-edit-box input[type="datetime-local"] { 
                 width: 100% !important; 
                 max-width: 100% !important; 
                 min-width: 0 !important; 
@@ -285,25 +312,7 @@
                 padding: 8px 12px !important; 
                 line-height: 24px !important; 
                 box-sizing: border-box !important;
-                -webkit-appearance: none !important;
-                -moz-appearance: none !important;
-                appearance: none !important;
             }
-        }
-        
-        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; min-width: 0; }
-        .todo-datetime-group span { font-size: 0.75rem; color: var(--et-dark); font-weight: 700; padding-left: 2px; }
-        
-        .todo-sub-fields input { 
-            width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; 
-            font-size: 0.88rem; font-weight: 500; box-sizing: border-box; outline: none; background: #fff; 
-            color: var(--et-dark); transition: all 0.2s ease; letter-spacing: -0.01em;
-        }
-        .todo-sub-fields input:focus { border-color: var(--et-red); background-color: var(--et-red-light); box-shadow: 0 0 0 3px rgba(198, 41, 23, 0.08); }
-        
-        .todo-sub-fields input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
         }
         
         .todo-scroll-viewport {
@@ -331,14 +340,10 @@
         .todo-text.done { text-decoration: line-through; color: var(--et-muted); }
         .todo-meta-line { font-size: 0.78rem; color: var(--et-muted); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
-        .todo-inline-edit-box { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background-color: #fdfdfd; border-top: 1px dashed var(--et-border); }
-        .todo-inline-edit-box input { padding: 6px 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; outline: none; }
-        .todo-inline-edit-box input:focus { border-color: var(--et-red); }
+        .todo-inline-edit-box { display: flex; flex-direction: column; gap: 10px; padding: 12px 10px; background-color: #fdfdfd; border-top: 1px dashed var(--et-border); box-sizing: border-box; }
+        .todo-inline-edit-box input[type="text"] { padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.88rem; outline: none; }
         
         .todo-inline-edit-box input[type="datetime-local"] { accent-color: var(--et-red); font-weight: 500; color: var(--et-dark); }
-        .todo-inline-edit-box input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
-        }
 
         .et-cal-container { width: 100%; border: 1px solid var(--et-border); border-radius: 14px; overflow: hidden; background: #fff; margin-bottom: 20px; padding: 14px 12px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .et-cal-top-control { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
@@ -466,6 +471,7 @@
 
 <div class="container">
     
+    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -589,6 +595,7 @@
     </div>
 
 
+    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
             <h1>졸업사정표</h1>
@@ -649,6 +656,7 @@
     </div>
 
 
+    <!-- ─── [화면 3] 할 일 목록 ─── -->
     <div id="viewTodo" class="view-content">
         <div class="grad-header">
             <h1>할 일 목록</h1>
@@ -1545,7 +1553,7 @@
                 innerItemHtml += `
                     <div class="todo-inline-edit-box" id="todoInlineEditBox-${todo.id}">
                         <input type="text" id="inlineTodoText-${todo.id}" value="${todo.text}" placeholder="내용">
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                        <div class="todo-inline-edit-grid">
                             <input type="datetime-local" id="inlineTodoStart-${todo.id}" value="${todo.start||''}">
                             <input type="datetime-local" id="inlineTodoDeadline-${todo.id}" value="${todo.deadline||''}">
                         </div>
@@ -1582,7 +1590,6 @@
 
         generateCalendarGrid();
 
-        /* [요구사항 3번 해결] 달력의 동적 링크 클릭 포커싱 지점을 화면 정중앙(block: 'center')으로 정밀 고정 사상 처리 */
         if(activeTodoInlineEditIndex !== -1) {
             setTimeout(() => {
                 const targetBox = document.getElementById(`todoInlineEditBox-${activeTodoInlineEditIndex}`);
@@ -1671,7 +1678,6 @@
 
             cell.innerHTML = `<span class="et-cal-date-num">${dayObj.date.getDate()}</span>`;
 
-            /* [요구사항 2번 가동] s 루프 한계 수치를 2에서 3으로 확장하여 3중 레이어 스택 지원 */
             for(let s = 0; s < 3; s++) {
                 const todo = daySlots[i][s];
                 if(todo) {
@@ -1723,7 +1729,6 @@
                         
                         const textContent = isAbsoluteStart ? todo.text : '';
                         
-                        /* [요구사항 3번 연동] 일정 바 자체에 온클릭 이벤트 링크를 인젝션하여 편집 인터페이스 다이렉트 트리거 */
                         cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};" onclick="toggleTodoInlineEditPanelFromCalendar(${todo.id})">${textContent}</div>`;
                     }
                 }
