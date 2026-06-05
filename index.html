@@ -225,6 +225,7 @@
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
         .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
@@ -383,7 +384,6 @@
         .et-cal-day-cell.today-focus { background-color: #fffafb; }
         .et-cal-day-cell.today-focus .et-cal-date-num { background: var(--et-red); color: #fff !important; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-size: 0.72rem; display: inline-block; }
         
-        /* [요구사항 3번] 달력 내부 일정 띠 클릭 유도 핸들 커서 지정 */
         .et-cal-event-pill { 
             position: absolute;
             height: 15px; 
@@ -401,7 +401,6 @@
             cursor: pointer;
         }
         
-        /* [요구사항 2번] 하루 최대 3개 배치를 위해 세로 마운트 좌표 정밀 압착 조정 */
         .pill-slot-0 { top: 21px; }
         .pill-slot-1 { top: 39px; }
         .pill-slot-2 { top: 57px; }
@@ -455,7 +454,6 @@
             padding-top: 15px;
             border-top: 1px dashed var(--et-border);
         }
-        /* [요구사항 1번] 버튼 내부 괄호 서식 완전 제외 마감 */
         .btn-backup { background-color: var(--et-dark); color: #fff; }
         .btn-restore { background-color: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
 
@@ -544,7 +542,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label soul="grade">성적</label>
+                    <label for="grade">성적</label>
                     <select id="grade" required>
                         <option value="A+">A+</option>
                         <option value="A">A</option>
@@ -914,7 +912,6 @@
         renderTodoList();
     }
 
-    /* [요구사항 3번] 달력 내부 일정 클릭 시 외부 인터페이스 트리거 및 인라인 레이아웃 동기화 작동기 */
     function toggleTodoInlineEditPanelFromCalendar(id) {
         activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
         renderTodoList();
@@ -1585,11 +1582,12 @@
 
         generateCalendarGrid();
 
+        /* [요구사항 3번 해결] 달력의 동적 링크 클릭 포커싱 지점을 화면 정중앙(block: 'center')으로 정밀 고정 사상 처리 */
         if(activeTodoInlineEditIndex !== -1) {
             setTimeout(() => {
                 const targetBox = document.getElementById(`todoInlineEditBox-${activeTodoInlineEditIndex}`);
                 if(targetBox) {
-                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 80);
         }
@@ -1673,7 +1671,7 @@
 
             cell.innerHTML = `<span class="et-cal-date-num">${dayObj.date.getDate()}</span>`;
 
-            /* [요구사항 2번 가동] s 루프 제한 범위를 2에서 3으로 확장하여 동시에 최대 3개 일정 마운트 수용 */
+            /* [요구사항 2번 가동] s 루프 한계 수치를 2에서 3으로 확장하여 3중 레이어 스택 지원 */
             for(let s = 0; s < 3; s++) {
                 const todo = daySlots[i][s];
                 if(todo) {
@@ -1723,10 +1721,9 @@
 
                         const slotClass = `pill-slot-${s}`;
                         
-                        /* [요구사항 1번 해결] 바의 종류와 무관하게 실제 태스크의 절대 기점(isAbsoluteStart)에만 텍스트를 할당하도록 픽스 */
                         const textContent = isAbsoluteStart ? todo.text : '';
                         
-                        /* [요구사항 3번 해결] 캘린더 피커 내부에 클릭 핸들러(onclick)를 이식하여 즉각적인 할 일 데이터 폼 포커싱 수용 */
+                        /* [요구사항 3번 연동] 일정 바 자체에 온클릭 이벤트 링크를 인젝션하여 편집 인터페이스 다이렉트 트리거 */
                         cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};" onclick="toggleTodoInlineEditPanelFromCalendar(${todo.id})">${textContent}</div>`;
                     }
                 }
