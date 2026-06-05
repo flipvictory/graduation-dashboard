@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -67,6 +66,7 @@
         .view-content { display: none; width: 100%; }
         .view-content.active { display: block; }
 
+        /* ─── 8. 하단 내비게이션 바 3분할 구조 변경 ─── */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -92,7 +92,7 @@
             flex-direction: column;
             align-items: center;
             gap: 2px;
-            width: 50%;
+            width: 33.33%;
             height: 100%;
             justify-content: center;
         }
@@ -162,9 +162,9 @@
         .et-table th { font-size: 0.82rem; color: var(--et-muted); font-weight: 400; padding: 8px 4px; border-bottom: 1px solid var(--et-border); }
         .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; }
         
-        /* 모바일 꾹 누르기 활성화 시 시각적 스타일 피드백 효과 */
-        .draggable-tr { transition: background-color 0.2s; user-select: none; -webkit-user-select: none; }
-        .draggable-tr.dragging { opacity: 0.5; background-color: var(--et-red-light) !important; border: 1px dashed var(--et-red); }
+        /* ─── 2. 모바일 드래그 트래킹 전용 터치 최적화 CSS ─── */
+        .draggable-tr { transition: background-color 0.2s, transform 0.05s linear; user-select: none; -webkit-user-select: none; }
+        .draggable-tr.dragging { opacity: 0.7; background-color: var(--et-red-light) !important; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.15); pointer-events: none; }
         
         .et-col-name { padding-left: 6px !important; }
         .course-title-wrapper { display: flex; align-items: center; max-width: 100%; overflow: hidden; }
@@ -235,7 +235,7 @@
         .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        .et-dual-charts-container { display: flex; row-gap: 35px; column-gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0 20px 0; padding-bottom: 15px; }
+        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0 20px 0; padding-bottom: 15px; row-gap: 35px; column-gap: 12px;}
         .et-radar-box { flex: 1; min-width: 240px; height: 200px; position: relative; }
         .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
@@ -254,13 +254,22 @@
         .badge-replaced { background-color: #f1f5f9; color: #94a3b8; text-decoration: line-through; }
         .badge-retake { background-color: #fff3bf; color: #d9480f; }
         .badge-eng { background-color: #eebefa; color: #ae3ec9; }
+
+        /* ─── 4. 할 일(To-Do) 전용 디자인 규칙 컴포넌트 ─── */
+        .todo-input-box { display: flex; gap: 8px; margin-bottom: 15px; }
+        .todo-input-box input { flex: 1; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.92rem; outline: none; }
+        .todo-input-box input:focus { border-color: var(--et-red); }
+        .todo-list { list-style: none; padding: 0; margin: 0; }
+        .todo-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 4px; border-bottom: 1px solid var(--et-border); font-size: 0.95rem; }
+        .todo-left { display: flex; align-items: center; gap: 10px; width: 80%; }
+        .todo-text { font-weight: 500; word-break: break-all; transition: color 0.2s; }
+        .todo-text.done { text-decoration: line-through; color: var(--et-muted); }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -298,7 +307,7 @@
         <div class="et-sem-detail-header">
             <div class="et-sem-title-group">
                 <span class="et-sem-title" id="etActiveSemName">3학년 1학기</span>
-                <span class="et-sem-stats">평점 <span id="etActiveSemGpa">0.00</span> 전공 <span id="etActiveSemMajorGpa">0.00</span> 취득 <span id="etActiveSemCredits">0</span></span>
+                <span class="et-sem-stats">평점 <span id="etActiveSemGpa">0.00</span> 전공 <span id="etActiveSemMajorGpa">0.00</span> 신청 <span id="etActiveSemAttempted">0</span> 취득 <span id="etActiveSemCredits">0</span></span>
             </div>
             <button class="et-btn-timetable" onclick="document.getElementById('subjectForm').scrollIntoView({behavior:'smooth',block:'center'})">과목 추가창</button>
         </div>
@@ -384,7 +393,6 @@
     </div>
 
 
-    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
             <h1>졸업사정표</h1>
@@ -444,6 +452,21 @@
         </div>
     </div>
 
+
+    <div id="viewTodo" class="view-content">
+        <div class="grad-header">
+            <h1>할 일 목록</h1>
+        </div>
+        <div class="card">
+            <h2>학업 및 졸업 미션 관리</h2>
+            <div class="todo-input-box">
+                <input type="text" id="todoInput" placeholder="예: 토익 700점 넘기기, 열역학 과제제출" onkeypress="if(event.keyCode===13) addTodo()">
+                <button class="btn btn-primary" onclick="addTodo()">등록</button>
+            </div>
+            <ul class="todo-list" id="todoListContainer"></ul>
+        </div>
+    </div>
+
 </div>
 
 <div class="bottom-nav">
@@ -452,6 +475,9 @@
     </button>
     <button id="navGrad" class="nav-btn" onclick="switchView('graduation')">
         <span style="font-size:1.3rem;">🎓</span> 졸업사정표
+    </button>
+    <button id="navTodo" class="nav-btn" onclick="switchView('todo')">
+        <span style="font-size:1.3rem;">✅</span> 할 일
     </button>
 </div>
 
@@ -506,16 +532,15 @@
         { semester: '1학년 1학기', name: '일반화학및연습 I', credits: 3, grade: 'D', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '1학년 1학기', name: '일반화학실험 I', credits: 1, grade: 'B+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '1학년 1학기', name: '1학년세미나 I', credits: 1, grade: 'P', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 1학기', name: '자유정의진리 I', credits: 3, grade: 'B+', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 1학기', name: '글쓰기', credits: 2, grade: 'B', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 1학기', name: 'ACADEMIC ENGLISH I', credits: 1, grade: 'A', courseType: '공통교양', isRetake: '일반', isEnglish: '영어' },
-        { semester: '1학년 1학기', name: '미적분학및연습 I', credits: 3, grade: 'F', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' }, 
-        { semester: '1학년 1학기', name: '일반물리학및실험 I', credits: 3, grade: 'C+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 1학기', name: '일반물리학실험 I', credits: 1, grade: 'A+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 1학기', name: '물리화학', credits: 3, grade: 'B', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 1학기', name: '공학수학 I', credits: 3, grade: 'B+', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 2학기', name: '공학수학 II', credits: 3, grade: 'B+', courseType: '전공선택', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 2학기', name: '화공열역학', credits: 3, grade: 'A+', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' }
+    ];
+
+    // 4. 투두 리스트 데이터 초기 버퍼 선언
+    let todoData = JSON.parse(localStorage.getItem('todoDataGrad')) || [
+        { id: 1, text: '공인영어성적 TOEIC 650점 이상 달성하기', done: false },
+        { id: 2, text: '핵심교양 잔여학점 이수 요건 확인', done: false }
     ];
 
     let activeSemester = '3학년 1학기'; 
@@ -531,6 +556,10 @@
         } else if (viewName === 'graduation') {
             document.getElementById('viewGraduation').classList.add('active');
             document.getElementById('navGrad').classList.add('active');
+        } else if (viewName === 'todo') {
+            document.getElementById('viewTodo').classList.add('active');
+            document.getElementById('navTodo').classList.add('active');
+            renderTodoList();
         }
         activeInlineEditIndex = -1;
         updateDashboard();
@@ -703,16 +732,21 @@
 
             if(!group) return;
             group.subjects.push(item);
+            
+            // ─── 3. F 및 재수강 탈락 과목은 신청 학점(subCredits)에 무조건 합산 반영 ───
             group.subCredits += credits;
 
+            // F학점, NP학점, 혹은 재수강 탈락 과목은 취득 학점 계산에서 전면 스킵 처리
             if (item.grade === 'F' || item.grade === 'NP' || item.isReplaced) {
-                if(item.grade === 'F' && !item.isReplaced) {
-                    group.gpSub += credits; totalGpSub += credits;
-                    if(item.courseType.includes('전공') || item.courseType.includes('심화')) {
-                        group.majorGpSub += credits; majorGpSub += credits;
-                    }
-                }
                 if(!item.isReplaced) { gradeCounts[item.grade]++; validGradeTotalCount++; }
+                return;
+            }
+
+            // ─── 3. 패스과목(P)도 신청에는 들어가지만 평점 영향 없음 예외분기 확보 ───
+            if (item.grade === 'P') {
+                group.pubCredits += credits; totalCredits += credits;
+                gradeCounts[item.grade]++; validGradeTotalCount++;
+                if (rawEarned[item.courseType] !== undefined) rawEarned[item.courseType] += credits;
                 return;
             }
 
@@ -729,7 +763,8 @@
             if(item.name.replace(/ /g, '').includes('학부세미나')) { hasSeminar = true; }
             if(item.isEnglish === '영어') { approvedEnglishCount++; }
 
-            if(pnt !== null) {
+            // ─── 3. F, P, NP 평점 산출 완전 제외 공식 리팩토링 진행 ───
+            if(pnt !== null && item.grade !== 'F') { 
                 group.gpSub += credits; group.gpSum += (pnt * credits);
                 totalGpSub += credits; totalGpSum += (pnt * credits);
                 if(item.courseType === '전공필수' || item.courseType === '전공선택' || item.courseType === '심화필수') {
@@ -780,9 +815,12 @@
         document.getElementById('etActiveSemName').innerText = activeSemester;
         const activeSemGpa = activeGroup.gpSub > 0 ? (activeGroup.gpSum / activeGroup.gpSub).toFixed(2) : '0.00';
         const activeSemMajorGpa = activeGroup.majorGpSub > 0 ? (activeGroup.majorGpSum / activeGroup.majorGpSub).toFixed(2) : '0.00';
+        
+        // ─── 1. 신청 학점 지표를 상응 템플릿 타겟 변수에 동적 할당 ───
         document.getElementById('etActiveSemGpa').innerText = activeSemGpa;
         document.getElementById('etActiveSemMajorGpa').innerText = activeSemMajorGpa;
-        document.getElementById('etActiveSemCredits').innerText = activeGroup.pubCredits;
+        document.getElementById('etActiveSemAttempted').innerText = activeGroup.subCredits; // 신청
+        document.getElementById('etActiveSemCredits').innerText = activeGroup.pubCredits; // 취득
 
         const etTbody = document.getElementById('etSubjectTableBody');
         etTbody.innerHTML = '';
@@ -865,16 +903,15 @@
         bindEtDragAndDrop(); 
     }
 
-    // ─── 1. 마우스 및 모바일 롱 프레스 터치 대응 하이브리드 정렬 엔진 ───
+    // ─── 2. 모바일 터치 트래킹 고성능 유연 물리 드래그앤드롭 엔진 부착 ───
     function bindEtDragAndDrop() {
         const tbody = document.getElementById('etSubjectTableBody');
         let dragEl = null;
         let touchTimeout = null;
         let isTouchDragging = false;
         let startY = 0;
-        let startX = 0;
+        let originalOffsetY = 0;
 
-        // PC 데스크톱 마우스 인터랙션 가동
         tbody.querySelectorAll('.draggable-tr').forEach(row => {
             row.addEventListener('dragstart', () => {
                 dragEl = row;
@@ -896,40 +933,50 @@
             }
         });
 
-        // 스마트폰 모바일 0.4초 롱 프레스(꾹 누르기) 대응 터치 인터랙션 엔진
+        // 모바일 Touch 이벤트 기반 실시간 위치 피드백 메커니즘
         tbody.querySelectorAll('.draggable-tr').forEach(row => {
             row.addEventListener('touchstart', (e) => {
                 const touch = e.touches[0];
                 startY = touch.clientY;
-                startX = touch.clientX;
                 dragEl = row;
 
                 touchTimeout = setTimeout(() => {
                     isTouchDragging = true;
                     row.classList.add('dragging');
-                    // 지원 기기일 경우 롱 프레스 작동 감지 haptic 피드백 진동 발생
-                    if (navigator.vibrate) navigator.vibrate(40);
-                }, 400); 
+                    if (navigator.vibrate) navigator.vibrate(40); // 스마트폰 햅틱 진동 피드백 작동
+                }, 400); // 0.4초 꾹 누를 시 발동
             }, { passive: true });
 
             row.addEventListener('touchmove', (e) => {
                 const touch = e.touches[0];
                 
                 if (!isTouchDragging) {
-                    // 롱프레스 타이머 이전에 스크롤 등을 진행할 경우 입력 예외 무력화 취소
-                    if (Math.abs(touch.clientY - startY) > 8 || Math.abs(touch.clientX - startX) > 8) {
-                        clearTimeout(touchTimeout);
-                    }
+                    if (Math.abs(touch.clientY - startY) > 10) clearTimeout(touchTimeout);
                     return;
                 }
 
-                // 롱프레스 드래그 정렬 모드 시에 화면 페이지가 스크롤되는 것을 물리 차단
-                if (e.cancelable) e.preventDefault();
+                if (e.cancelable) e.preventDefault(); // 스크롤 무력화 차단
 
-                const afterElement = getDragAfterElement(tbody, touch.clientY);
-                if (dragEl && dragEl.parentNode === tbody) {
-                    if (afterElement == null) tbody.appendChild(dragEl);
-                    else tbody.insertBefore(dragEl, afterElement);
+                // 실시간으로 꾹 누른 엘리먼트를 손가락 y좌표 변화량에 맞춰 실시간 이동 연출
+                const currentDeltaY = touch.clientY - startY;
+                row.style.transform = `translateY(${currentDeltaY}px)`;
+
+                // 손가락 위치 기반 레이아웃 인덱스 정렬 교환 연산 처리
+                const elementUnderTouch = document.elementFromPoint(touch.clientX, touch.clientY);
+                const targetRow = elementUnderTouch ? elementUnderTouch.closest('.draggable-tr') : null;
+                
+                if (targetRow && targetRow !== row && targetRow.parentNode === tbody) {
+                    const bounding = targetRow.getBoundingClientRect();
+                    const offset = touch.clientY - bounding.top - bounding.height / 2;
+                    
+                    if (offset < 0) {
+                        tbody.insertBefore(row, targetRow);
+                    } else {
+                        tbody.insertBefore(row, targetRow.nextElementSibling);
+                    }
+                    // DOM 트리가 바뀌면 기준 축을 초기화하여 그래픽 튀는 스냅점 보정
+                    startY = touch.clientY;
+                    row.style.transform = 'translateY(0px)';
                 }
             }, { passive: false });
 
@@ -937,15 +984,7 @@
                 clearTimeout(touchTimeout);
                 if (isTouchDragging) {
                     row.classList.remove('dragging');
-                    isTouchDragging = false;
-                    finalizeReorder();
-                }
-            });
-            
-            row.addEventListener('touchcancel', () => {
-                clearTimeout(touchTimeout);
-                if (isTouchDragging) {
-                    row.classList.remove('dragging');
+                    row.style.transform = '';
                     isTouchDragging = false;
                     finalizeReorder();
                 }
@@ -1041,9 +1080,10 @@
             subjectData.forEach(item => {
                 if(item.semester !== sem || item.isReplaced) return;
                 hasData = true; const credits = Number(item.credits); const pnt = gradePoints[item.grade];
-                if(item.grade === 'F') {
-                    gpSub += credits; if(item.courseType.includes('전공') || item.courseType.includes('심화')) majorGpSub += credits; return;
-                }
+                
+                // 3. F학점 평점 연산학점 분모 배제 규칙 필터링
+                if(item.grade === 'F') return;
+
                 if(pnt !== null) {
                     gpSub += credits; gpSum += (pnt * credits);
                     if(item.courseType.includes('전공') || item.courseType.includes('심화')) { majorGpSub += credits; majorGpSum += (pnt * credits); }
@@ -1157,12 +1197,49 @@
         changeActiveSemesterTab(activeSemester);
     });
 
-    function deleteSubject(index) {
-        if(confirm('이 과목을 삭제하시겠습니까?')) {
-            subjectData.splice(index, 1);
-            activeInlineEditIndex = -1;
-            updateDashboard();
+    // ─── 4. 할 일 목록(To-Do) 내부 제어 전용 자바스크립트 기계 ───
+    function renderTodoList() {
+        const container = document.getElementById('todoListContainer');
+        container.innerHTML = '';
+        localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
+
+        if(todoData.length === 0) {
+            container.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:30px 0; font-size:0.9rem;">등록된 할 일이 없습니다.</li>`;
+            return;
         }
+
+        todoData.forEach((todo, idx) => {
+            container.innerHTML += `
+                <li class="todo-item">
+                    <div class="todo-left" onclick="toggleTodo(${todo.id})">
+                        <span class="et-chk-indicator ${todo.done ? 'checked' : ''}"></span>
+                        <span class="todo-text ${todo.done ? 'done' : ''}">${todo.text}</span>
+                    </div>
+                    <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteTodo(${todo.id})">삭제</button>
+                </li>
+            `;
+        });
+    }
+
+    function addTodo() {
+        const input = document.getElementById('todoInput');
+        const text = input.value.trim();
+        if(!text) return;
+        
+        todoData.push({ id: Date.now(), text: text, done: false });
+        input.value = '';
+        renderTodoList();
+    }
+
+    function toggleTodo(id) {
+        const todo = todoData.find(t => t.id === id);
+        if(todo) todo.done = !todo.done;
+        renderTodoList();
+    }
+
+    function deleteTodo(id) {
+        todoData = todoData.filter(t => t.id !== id);
+        renderTodoList();
     }
 
     loadExtraRequirements();
@@ -1171,7 +1248,7 @@
 </script>
 
 <script>
-    // 서비스워커 완전 파괴 스크립트 (모바일 웹 뷰 캐시 꼬임 영구 원천 방어)
+    // 강제 서비스워커 청소부 스크립트 이식 (캐시 롤백 영구 무력화)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
             for(let registration of registrations) {
