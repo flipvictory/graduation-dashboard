@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -106,7 +107,7 @@
             margin-bottom: 5px;
         }
         .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; margin-left: auto; margin-right: auto; }
-        .et-header .close-btn { font-size: 1.4rem; color: #000; pointer: cursor; background: none; border: none; padding: 0 10px; font-weight: 300; }
+        .et-header .close-btn { font-size: 1.4rem; color: #000; cursor: pointer; background: none; border: none; padding: 0 10px; font-weight: 300; }
 
         .et-tabs-wrapper {
             overflow-x: auto;
@@ -129,6 +130,18 @@
         .et-tab.active::after {
             content: ''; position: absolute; bottom: 0; left: 12px; right: 12px; height: 2px; background-color: #000000;
         }
+
+        .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
+        .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
+        .et-stat-box p { font-size: 1.65rem; font-weight: 700; color: var(--et-red); margin: 0; }
+        .et-stat-box p span { font-size: 0.85rem; color: var(--et-muted); font-weight: 400; }
+
+        .et-chart-legend { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.78rem; color: var(--et-muted); margin-bottom: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .legend-dot.total { background-color: var(--et-red); }
+        .legend-dot.major { background-color: var(--et-muted); }
+        .et-chart-container { position: relative; height: 160px; width: 100%; margin-bottom: 25px; }
 
         .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
         .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
@@ -266,15 +279,26 @@
         .todo-input-box input[type="text"] { width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.92rem; outline: none; box-sizing: border-box; }
         .todo-input-box input:focus { border-color: var(--et-red); }
         
-        /* ─── [요구사항 1번 해결] 데스크톱/모바일 폼 요소 정렬 및 너비 고정 픽스 ─── */
+        /* ─── 할 일 등록 서브 레이아웃 크기 완전 철통 고정 서식 ─── */
         .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; margin: 0; padding: 0; }
-        .todo-sub-fields input#todoLocation { grid-column: span 2; width: 100%; box-sizing: border-box; }
+        .todo-sub-fields input#todoLocation { grid-column: span 2; width: 100% !important; box-sizing: border-box; }
         
-        /* 모바일 환경 진입 시 그리드를 해제하고 강력한 블록 플렉스 1열로 변환하여 튀어나옴 완벽 방지 */
+        /* [핵심 솔루션] 모바일 진입 시 고유 외형 제어권을 전면 박탈하고 피커 고유 박스를 압착 */
         @media (max-width: 480px) {
-            .todo-sub-fields { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+            .todo-sub-fields { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
             .todo-sub-fields input#todoLocation { width: 100% !important; }
-            .todo-sub-fields input[type="datetime-local"] { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
+            
+            .todo-datetime-group { width: 100% !important; max-width: 100% !important; min-width: 0 !important; box-sizing: border-box !important; }
+            
+            .todo-sub-fields input[type="datetime-local"] { 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                min-width: 0 !important; 
+                box-sizing: border-box !important;
+                -webkit-appearance: none !important; /* 모바일 전용 기본 뷰 강제 제거 */
+                -moz-appearance: none !important;
+                appearance: none !important;
+            }
         }
         
         .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; min-width: 0; }
@@ -407,6 +431,7 @@
 
 <div class="container">
     
+    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -530,6 +555,7 @@
     </div>
 
 
+    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
             <h1>졸업사정표</h1>
@@ -590,6 +616,7 @@
     </div>
 
 
+    <!-- ─── [화면 3] 할 일 목록 ─── -->
     <div id="viewTodo" class="view-content">
         <div class="grad-header">
             <h1>할 일 목록</h1>
