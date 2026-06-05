@@ -34,7 +34,7 @@
             background-color: var(--bg-color);
             color: var(--et-dark);
             margin: 0;
-            padding: 0 0 70px 0; /* 하단 탭바 공간 확보 */
+            padding: 0 0 80px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -43,7 +43,7 @@
 
         body {
             padding-top: env(safe-area-inset-top);
-            padding-bottom: calc(70px + env(safe-area-inset-bottom));
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
@@ -59,46 +59,43 @@
             padding: 0 16px;
         }
 
-        /* 탭 화면 전환 구조 */
         .view-content { display: none; width: 100%; }
         .view-content.active { display: block; }
 
-        /* ─── [공통] 하단 고정 탭바 내비게이션 ─── */
+        /* ─── 8. 하단 내비게이션 바 크기 축소 및 여백 보강 ─── */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 60px;
+            height: 52px; 
             background-color: #ffffff;
             border-top: 1px solid var(--et-border);
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 999;
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: calc(14px + env(safe-area-inset-bottom)); 
         }
         .nav-btn {
             background: none;
             border: none;
             color: var(--et-muted);
-            font-size: 0.95rem;
+            font-size: 0.82rem; 
             font-weight: 500;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
             width: 50%;
             height: 100%;
             justify-content: center;
         }
-        .nav-btn.active {
-            color: var(--et-red);
-            font-weight: 700;
-        }
+        .nav-btn span { font-size: 1.1rem !important; }
+        .nav-btn.active { color: var(--et-red); font-weight: 700; }
 
-        /* ─── [화면 1: 학점계산기 에브리타임 스타일] ─── */
+        /* ─── 학점계산기 상단 UI ─── */
         .et-header {
             display: flex;
             justify-content: space-between;
@@ -110,7 +107,6 @@
         .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; margin-left: auto; margin-right: auto; }
         .et-header .close-btn { font-size: 1.4rem; color: #000; cursor: pointer; background: none; border: none; padding: 0 10px; font-weight: 300; }
 
-        /* 가로 스크롤 학기 탭 */
         .et-tabs-wrapper {
             overflow-x: auto;
             white-space: nowrap;
@@ -128,185 +124,114 @@
             font-weight: 500;
             position: relative;
         }
-        .et-tab.active {
-            color: #000000;
-            font-weight: 700;
-        }
+        .et-tab.active { color: #000000; font-weight: 700; }
         .et-tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 12px;
-            right: 12px;
-            height: 2px;
-            background-color: #000000;
+            content: ''; position: absolute; bottom: 0; left: 12px; right: 12px; height: 2px; background-color: #000000;
         }
 
-        /* 대형 대시보드 스코어 판 */
-        .et-summary-board {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            text-align: center;
-            margin-bottom: 20px;
-            padding: 10px 0;
-        }
+        .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
         .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
         .et-stat-box p { font-size: 1.65rem; font-weight: 700; color: var(--et-red); margin: 0; }
         .et-stat-box p span { font-size: 0.85rem; color: var(--et-muted); font-weight: 400; }
         .gear-icon { font-size: 0.85rem; color: var(--et-muted); vertical-align: middle; margin-left: 2px; cursor: pointer; }
 
-        /* 그래프 상단 범례 표시 */
-        .et-chart-legend {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            font-size: 0.78rem;
-            color: var(--et-muted);
-            margin-bottom: 6px;
-        }
+        .et-chart-legend { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.78rem; color: var(--et-muted); margin-bottom: 6px; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
         .legend-dot.total { background-color: var(--et-red); }
         .legend-dot.major { background-color: var(--et-muted); }
+        .et-chart-container { position: relative; height: 160px; width: 100%; margin-bottom: 25px; }
 
-        .et-chart-container {
-            position: relative;
-            height: 160px;
-            width: 100%;
-            margin-bottom: 25px;
-        }
-
-        /* 성적 대역폭 분포 바 그래프 */
-        .et-dist-container {
-            margin-bottom: 30px;
-            padding: 0 4px;
-        }
-        .et-dist-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-        }
+        .et-dist-container { margin-bottom: 30px; padding: 0 4px; }
+        .et-dist-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
         .et-dist-label { width: 35px; font-weight: bold; color: #555; }
         .et-dist-bar-bg { flex: 1; background-color: #f3f3f3; height: 6px; border-radius: 3px; overflow: hidden; margin: 0 10px; }
         .et-dist-bar-fill { height: 100%; border-radius: 3px; }
         .et-dist-pct { width: 35px; text-align: right; color: #999; font-size: 0.8rem; }
 
-        /* 현재 선택된 학기 상세 내역 헤더 */
-        .et-sem-detail-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 12px;
-            padding-bottom: 4px;
-        }
+        .et-sem-detail-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; padding-bottom: 4px; }
         .et-sem-title-group { display: flex; flex-direction: column; gap: 2px; }
         .et-sem-title { font-size: 1.35rem; font-weight: 700; color: #000; }
         .et-sem-stats { font-size: 0.88rem; color: #737373; }
         .et-sem-stats span { color: var(--et-red); font-weight: 500; }
-        .et-btn-timetable {
-            background-color: var(--et-red);
-            color: #ffffff;
-            border: none;
-            border-radius: 20px;
-            padding: 8px 14px;
-            font-size: 0.82rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .et-btn-timetable { background-color: var(--et-red); color: #ffffff; border: none; border-radius: 20px; padding: 8px 14px; font-size: 0.82rem; font-weight: bold; cursor: pointer; }
 
-        /* 에브리타임 스타일 슬림 테이블 구조 */
-        .et-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-        }
-        .et-table th {
-            font-size: 0.82rem;
-            color: var(--et-muted);
-            font-weight: 400;
-            padding: 8px 4px;
-            border-bottom: 1px solid var(--et-border);
-        }
-        .et-table td {
-            font-size: 0.92rem;
-            padding: 14px 4px;
-            border-bottom: 1px solid var(--et-border);
-        }
-        .et-table tr:hover { background-color: #fafafa; cursor: pointer; }
+        /* ─── 1. 드래그 앤 드롭 및 리스트 레이아웃 ─── */
+        .et-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .et-table th { font-size: 0.82rem; color: var(--et-muted); font-weight: 400; padding: 8px 4px; border-bottom: 1px solid var(--et-border); }
+        .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; }
+        .draggable-tr { transition: background-color 0.2s; }
+        .draggable-tr.dragging { opacity: 0.4; background-color: var(--et-red-light); }
         .et-col-name { font-weight: 500; color: #000; }
         .et-col-center { text-align: center; color: #444; }
+        
+        /* ─── 3. 성적 세로 탭 미니 선택기 스타일 ─── */
+        .et-col-grade { cursor: pointer; position: relative; }
+        .inline-grade-picker {
+            position: absolute; z-index: 100; background: white; border: 1px solid var(--et-border);
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 180px; overflow-y: auto;
+            right: 5%; top: 80%; width: 65px; text-align: center;
+        }
+        .picker-item { padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f2f2f2; cursor: pointer; font-weight: bold; color: #333; }
+        .picker-item:hover { background-color: var(--et-red-light); color: var(--et-red); }
+
+        /* ─── 2. 전공 토글 체크 박스 인터페이스 ─── */
         .et-chk-indicator {
-            width: 16px; height: 16px; border: 1px solid var(--et-border);
-            border-radius: 3px; display: inline-block; vertical-align: middle;
-            position: relative;
+            width: 18px; height: 18px; border: 1px solid var(--et-border);
+            border-radius: 4px; display: inline-block; vertical-align: middle;
+            position: relative; cursor: pointer; transition: all 0.15s;
         }
-        .et-chk-indicator.checked {
-            background-color: var(--et-red);
-            border-color: var(--et-red);
-        }
+        .et-chk-indicator.checked { background-color: var(--et-red); border-color: var(--et-red); }
         .et-chk-indicator.checked::after {
-            content: '✓'; color: #fff; font-size: 11px; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            content: '✓'; color: #fff; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         }
 
-        /* 입력 폼 디자인 고도화 */
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            padding: 20px;
-            border: 1px solid var(--et-border);
-            margin-bottom: 25px;
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            margin-top: 0;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--et-red);
-            padding-left: 10px;
-            font-weight: 700;
-        }
+        /* ─── 5. 인라인 확장 실시간 과목 편집 구조 ─── */
+        .inline-edit-row { background-color: #fafafa !important; }
+        .inline-edit-box { display: flex; flex-direction: column; gap: 8px; padding: 6px 4px; }
+        .inline-edit-inputs { display: flex; gap: 6px; }
+        .inline-edit-inputs input { flex: 2; padding: 6px 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; }
+        .inline-edit-inputs select { flex: 1; padding: 6px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; background: #fff; }
+        .inline-edit-btns { display: flex; justify-content: flex-end; gap: 6px; }
+
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
         .form-group input:focus, .form-group select:focus { border-color: var(--et-red); }
-        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
         .btn-primary { background-color: var(--et-red); color: white; }
-        .btn-danger { background-color: transparent; color: var(--danger-color); padding: 4px 8px; font-size: 0.8rem; border: 1px solid var(--danger-color); border-radius: 4px; }
+        .btn-danger { background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
         .btn-close { background-color: #64748b; color: white; width: 100%; margin-top: 15px; }
 
-        /* ─── [화면 2: 졸업사정표 레이아웃] ─── */
+        /* ─── 7. 졸업사정표 에브리타임 스타일 깔끔한 디자인 통일 ─── */
         .grad-header { text-align: center; margin-bottom: 25px; padding-top: 15px; }
-        .grad-header h1 { font-size: 1.5rem; color: var(--et-dark); margin-bottom: 4px; font-weight: 700; }
-        .grad-header p { color: var(--et-muted); font-size: 0.9rem; margin: 0; }
+        .grad-header h1 { font-size: 1.4rem; color: var(--et-dark); margin-bottom: 4px; font-weight: 700; }
+        .grad-header p { color: var(--et-muted); font-size: 0.88rem; margin: 0; }
         
-        .summary-box-grad {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            color: #fff; border-radius: 14px; padding: 16px; text-align: center; margin-bottom: 20px;
-        }
-        .summary-box-grad h3 { font-size: 0.85rem; margin: 0 0 4px 0; opacity: 0.9; }
-        .summary-box-grad p { font-size: 1.6rem; font-weight: 700; margin: 0; }
+        .summary-box-grad { background: var(--et-red); color: #fff; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
+        .summary-box-grad h3 { font-size: 0.82rem; margin: 0 0 4px 0; opacity: 0.9; font-weight: 400; }
+        .summary-box-grad p { font-size: 1.8rem; font-weight: 700; margin: 0; }
 
         .mission-status {
             position: relative; display: flex; align-items: center; justify-content: space-between; 
-            background-color: #f1f5f9; padding: 12px 18px; border-radius: 30px; margin-bottom: 10px; 
+            background-color: #fdfdfd; padding: 12px 18px; border-radius: 8px; margin-bottom: 10px; 
             border: 1px solid var(--et-border); overflow: hidden; 
         }
         .mission-title, .status-indicator { position: relative; z-index: 10; font-weight: 700; font-size: 0.88rem; }
-        .text-fail-color { color: #1e293b; }
-        .text-pass-color { color: #047857; }
+        .text-fail-color { color: #555; }
+        .text-pass-color { color: var(--et-red); }
         .status-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; z-index: 1; transition: width 0.5s ease; }
-        .fill-fail { background-color: #fecdd3; } 
-        .fill-pass { background-color: #a7f3d0; } 
+        .fill-fail { background-color: #fbf1f0; } 
+        .fill-pass { background-color: #fde8e6; border-right: 2px solid var(--et-red); } 
 
         .grad-requirement-item { margin-bottom: 14px; }
         .grad-labels { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; font-weight: 500; }
-        .progress-bar-bg { background-color: #e2e8f0; border-radius: 20px; height: 10px; width: 100%; overflow: hidden; }
-        .progress-bar-fill { height: 100%; border-radius: 20px; transition: width 0.4s ease; }
+        .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        /* 모달 팝업 창 구조 */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 1000;
@@ -318,10 +243,9 @@
         }
         .modal-content h3 { margin-top: 0; border-bottom: 2px solid var(--et-border); padding-bottom: 10px; color: var(--et-red); font-size: 1.1rem; }
 
-        /* 배지 스타일 */
-        .badge { padding: 2px 4px; border-radius: 3px; font-size: 0.72rem; font-weight: bold; display: inline-block; }
+        .badge { padding: 2px 4px; border-radius: 3px; font-size: 0.72rem; font-weight: bold; display: inline-block; margin-left: 2px; }
         .badge-replaced { background-color: #f1f5f9; color: #94a3b8; text-decoration: line-through; }
-        .badge-retake { background-color: #fff3bf; color: #fcc419; }
+        .badge-retake { background-color: #fff3bf; color: #d9480f; }
         .badge-eng { background-color: #eebefa; color: #ae3ec9; }
     </style>
 </head>
@@ -368,37 +292,33 @@
                 <span class="et-sem-title" id="etActiveSemName">3학년 1학기</span>
                 <span class="et-sem-stats">평점 <span id="etActiveSemGpa">0.00</span> 전공 <span id="etActiveSemMajorGpa">0.00</span> 취득 <span id="etActiveSemCredits">0</span></span>
             </div>
-            <button class="et-btn-timetable" onclick="scrollToInputForm()">시간표 불러오기</button>
+            <button class="et-btn-timetable" onclick="document.getElementById('subjectForm').scrollIntoView({behavior:'smooth',block:'center'})">과목 추가창</button>
         </div>
 
         <table class="et-table">
             <thead>
                 <tr>
-                    <th style="width: 50%; text-align: left;">과목명</th>
-                    <th style="width: 15%; text-align: center;">학점</th>
-                    <th style="width: 20%; text-align: center;">성적</th>
-                    <th style="width: 15%; text-align: center;">전공</th>
+                    <th style="width: 52%; text-align: left; padding-left: 8px;">과목명</th>
+                    <th style="width: 16%; text-align: center;">학점</th>
+                    <th style="width: 16%; text-align: center;">성적</th>
+                    <th style="width: 16%; text-align: center;">전공</th>
                 </tr>
             </thead>
             <tbody id="etSubjectTableBody"></tbody>
         </table>
 
-        <div class="card input-card" id="formCardAnchor">
-            <h2 id="formTitle">과목 성적 입력 / 수정 / 관리</h2>
+        <div class="card input-card">
+            <h2>새 과목 성적 추가</h2>
             <form id="subjectForm" class="form-grid">
                 <input type="hidden" id="editIndex" value="-1">
-                
                 <div class="form-group">
                     <label for="semester">학기</label>
-                    <select id="semester" required onchange="changeActiveSemesterTab(this.value)">
-                        </select>
+                    <select id="semester" required onchange="changeActiveSemesterTab(this.value)"></select>
                 </div>
-
                 <div class="form-group" style="grid-column: span 2;">
                     <label for="subjectName">과목명</label>
                     <input type="text" id="subjectName" placeholder="예: 화공열역학" required>
                 </div>
-
                 <div class="form-group">
                     <label for="credits">학점</label>
                     <select id="credits" required>
@@ -408,7 +328,6 @@
                         <option value="4">4학점</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label for="grade">성적</label>
                     <select id="grade" required>
@@ -425,20 +344,18 @@
                         <option value="NP">NP (논패스)</option>
                     </select>
                 </div>
-
                 <div class="form-group" style="grid-column: span 2;">
-                    <label for="courseType">졸업요건 이수 구분</label>
+                    <label for="courseType">이수 구분</label>
                     <select id="courseType" required>
                         <option value="공통교양">공통교양 (지정 13학점)</option>
                         <option value="핵심교양">핵심교양 (지정 6학점)</option>
                         <option value="선택교양">선택교양 (지정 25학점)</option>
                         <option value="전공필수">전공필수 (지정 31학점)</option>
-                        <option value="전공선택">전공선택 (지정 11학점)</option>
+                        <option value="전공선택">전공선택 (지정 32학점)</option>
                         <option value="심화필수">심화필수 (지정 9학점)</option>
                         <option value="일반선택">일반선택 (기타 14학점)</option>
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label for="isRetake">재수강 여부</label>
                     <select id="isRetake" required>
@@ -446,17 +363,14 @@
                         <option value="재수강">재수강</option>
                     </select>
                 </div>
-
                 <div class="form-group">
-                    <label for="isEnglish">영어 과목 구분</label>
+                    <label for="isEnglish">영어 구분</label>
                     <select id="isEnglish" required>
                         <option value="일반">일반 강의</option>
-                        <option value="영어">영어/외국어 강의</option>
+                        <option value="영어">영어 강의</option>
                     </select>
                 </div>
-
-                <button type="submit" id="submitBtn" class="btn btn-primary" style="grid-column: span 1; height: 38px;">추가</button>
-                <button type="button" id="cancelEditBtn" class="btn" style="background-color: #e2e8f0; display:none; height: 38px;" onclick="resetFormState()">취소</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary" style="height: 38px;">추가</button>
             </form>
         </div>
     </div>
@@ -464,8 +378,8 @@
 
     <div id="viewGraduation" class="view-content">
         <div class="grad-header">
-            <h1>🎓 졸업 사정 요건 점검</h1>
-            <p>화공생명공학과 종합 시뮬레이션 시스템</p>
+            <h1>졸업 사정 요건 점검</h1>
+            <p>화공생명공학과 종합 대시보드</p>
         </div>
 
         <div class="summary-box-grad">
@@ -474,9 +388,11 @@
         </div>
 
         <div class="card clickable-card" onclick="openModal()" style="text-align: center;">
-            <h2>비교과 요건 현황 (클릭 시 입력/수정)</h2>
-            <canvas id="gradDoughnutChart" style="max-height: 140px; margin: 10px auto;"></canvas>
-            <div style="font-size:0.8rem; color:var(--et-muted); margin-top:5px;">💡 이곳을 터치하면 토익 / 논문 / 인권교육을 설정합니다.</div>
+            <h2>비교과 요건 밸런스 시각화 (클릭 시 입력/수정)</h2>
+            <div style="position: relative; height: 190px; width: 100%; margin: 10px auto;">
+                <canvas id="gradRadarChart"></canvas>
+            </div>
+            <div style="font-size:0.8rem; color:var(--et-muted); margin-top:5px;">💡 터치 시 토익 / 논문 / 인권교육 세부 설정을 변경합니다.</div>
         </div>
 
         <div class="card">
@@ -572,7 +488,8 @@
         '4학년 1학기', '4학년 여름계절', '4학년 2학기', '4학년 겨울계절'
     ];
     
-    const gradRequirements = { '공통교양': 13, '핵심교양': 6, '선택교양': 25, '전공필수': 31, '전공선택': 11, '심화필수': 9, '일반선택': 14 };
+    // 4. 전공선택 기준학점 32학점으로 반영 변경
+    const gradRequirements = { '공통교양': 13, '핵심교양': 6, '선택교양': 25, '전공필수': 31, '전공선택': 32, '심화필수': 9, '일반선택': 14 };
 
     let subjectData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [
         { semester: '1학년 1학기', name: '일반화학및연습 I', credits: 3, grade: 'D', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
@@ -585,39 +502,19 @@
         { semester: '1학년 1학기', name: '일반물리학및실험 I', credits: 3, grade: 'C+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '1학년 1학기', name: '일반물리학실험 I', credits: 1, grade: 'A+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '1학년 2학기', name: '일반화학및연습 II', credits: 3, grade: 'F', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: '일반화학실험 II', credits: 1, grade: 'B+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: '정보적사고', credits: 1, grade: 'P', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: '1학년세미나 II', credits: 1, grade: 'F', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: '자유정의진리 II', credits: 3, grade: 'B+', courseType: '공통교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: 'ACADEMIC ENGLISH II', credits: 1, grade: 'F', courseType: '공통교양', isRetake: '일반', isEnglish: '영어' },
-        { semester: '1학년 2학기', name: '미적분학및연습 II', credits: 3, grade: 'D', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' }, 
-        { semester: '1학년 2학기', name: '일반물리학및실험 II', credits: 3, grade: 'C', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 2학기', name: '일반물리학실험 II', credits: 1, grade: 'A', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '1학년 겨울계절', name: '미적분학및연습 I', credits: 3, grade: 'A', courseType: '선택교양', isRetake: '재수강', isEnglish: '일반' },
-        { semester: '2학년 1학기', name: '화공생명공학컴퓨팅및정보학입문', credits: 3, grade: 'A+', courseType: '선택교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 1학기', name: '한국의젊은시인들', credits: 3, grade: 'A', courseType: '핵심교양', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 1학기', name: '웹툰,한류,그리고미래콘텐츠', credits: 3, grade: 'A+', courseType: '핵심교양', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 1학기', name: '물리화학', credits: 3, grade: 'B', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 1학기', name: '공학수학 I', credits: 3, grade: 'B+', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 1학기', name: '유기화학 I', credits: 3, grade: 'C', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 2학기', name: '미적분학및연습 II', credits: 3, grade: 'D+', courseType: '선택교양', isRetake: '재수강', isEnglish: '일반' },
         { semester: '2학년 2학기', name: '공학수학 II', credits: 3, grade: 'B+', courseType: '전공선택', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 2학기', name: '유기화학 II', credits: 3, grade: 'A+', courseType: '전공선택', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 2학기', name: '생명공학', credits: 3, grade: 'C', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 2학기', name: '유체역학', credits: 3, grade: 'B', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
-        { semester: '2학년 2학기', name: '화공생명공학입문', credits: 2, grade: 'A+', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' },
         { semester: '2학년 2학기', name: '화공열역학', credits: 3, grade: 'A+', courseType: '전공필수', isRetake: '일반', isEnglish: '일반' }
     ];
 
-    // 2번 이미지처럼 기본 활성화 학기를 '3학년 1학기'로 설정 (데이터 보유 상황에 맞춰 유동 매핑)
     let activeSemester = '3학년 1학기'; 
-    let gpaChart, gradDoughnutChart;
+    let gpaChart, gradRadarChart;
+    let activeInlineEditIndex = -1; // 5. 인라인 편집 타겟 보관 변수
 
-    // 화면 뷰 분리용 스위칭 함수
     function switchView(viewName) {
         document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-        
         if (viewName === 'calculator') {
             document.getElementById('viewCalculator').classList.add('active');
             document.getElementById('navCalc').classList.add('active');
@@ -625,6 +522,7 @@
             document.getElementById('viewGraduation').classList.add('active');
             document.getElementById('navGrad').classList.add('active');
         }
+        activeInlineEditIndex = -1;
         updateDashboard();
     }
 
@@ -635,17 +533,13 @@
     function initFormAndTabs() {
         const semesterSelect = document.getElementById('semester');
         const tabContainer = document.getElementById('etTabContainer');
-        
-        semesterSelect.innerHTML = '';
-        tabContainer.innerHTML = '';
+        semesterSelect.innerHTML = ''; tabContainer.innerHTML = '';
 
         semesterOrder.forEach(sem => {
-            // Select Option 주입
             const opt = document.createElement('option');
             opt.value = sem; opt.innerText = sem;
             semesterSelect.appendChild(opt);
 
-            // 가로 스크롤 탭 바 주입
             const tab = document.createElement('div');
             tab.className = `et-tab ${sem === activeSemester ? 'active' : ''}`;
             tab.innerText = sem;
@@ -657,19 +551,78 @@
     function changeActiveSemesterTab(sem) {
         activeSemester = sem;
         document.getElementById('semester').value = sem;
-        
-        // 탭 CSS Active 포커싱 리매핑
         const tabs = document.querySelectorAll('.et-tab');
         semesterOrder.forEach((s, idx) => {
             if(s === sem) tabs[idx].classList.add('active');
             else tabs[idx].classList.remove('active');
         });
-        
+        activeInlineEditIndex = -1;
         updateDashboard();
     }
 
-    function scrollToInputForm() {
-        document.getElementById('formCardAnchor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 전역 외부 클릭 시 성적 변경 팝업 자동 닫기 처리
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.inline-grade-picker').forEach(el => el.remove());
+    });
+
+    // 3. 각 과목별 성적 셀 클릭 시 인라인 세로 미니 탭 오픈엔진
+    function openInlineGradePicker(idx, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.inline-grade-picker').forEach(el => el.remove());
+        
+        const cell = event.currentTarget;
+        const picker = document.createElement('div');
+        picker.className = 'inline-grade-picker';
+        
+        const grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'P', 'NP'];
+        grades.forEach(g => {
+            const item = document.createElement('div');
+            item.className = 'picker-item';
+            item.innerText = g === 'A' ? 'A0' : g;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                subjectData[idx].grade = g;
+                picker.remove();
+                updateDashboard();
+            };
+            picker.appendChild(item);
+        });
+        cell.appendChild(picker);
+    }
+
+    // 2. 전공 체크박스 클릭 인터페이스 핸들러
+    function toggleMajorStatus(idx, event) {
+        event.stopPropagation();
+        const sub = subjectData[idx];
+        const isMajor = (sub.courseType === '전공필수' || sub.courseType === '전공선택' || sub.courseType === '심화필수');
+        
+        if(isMajor) {
+            sub.courseType = '일반선택';
+        } else {
+            sub.courseType = '전공선택';
+        }
+        updateDashboard();
+    }
+
+    // 5. 과목명~학점 영역 선택 시 하단 스크롤 없이 라인 바로 밑 공간 확장 편집 전환
+    function toggleInlineEditPanel(idx, event) {
+        if(event.target.closest('.et-chk-indicator') || event.target.closest('.et-col-grade')) return;
+        activeInlineEditIndex = (activeInlineEditIndex === idx) ? -1 : idx;
+        updateDashboard();
+    }
+
+    function saveInlineFields(idx) {
+        const nameVal = document.getElementById(`inlineName-${idx}`).value.trim();
+        const creditVal = parseInt(document.getElementById(`inlineCredits-${idx}`).value);
+        const typeVal = document.getElementById(`inlineType-${idx}`).value;
+        
+        if(!nameVal) return alert('과목명을 정확히 입력해주세요.');
+        subjectData[idx].name = nameVal;
+        subjectData[idx].credits = creditVal;
+        subjectData[idx].courseType = typeVal;
+        
+        activeInlineEditIndex = -1;
+        updateDashboard();
     }
 
     function saveExtraRequirements() {
@@ -702,13 +655,11 @@
     function calculateReplacedCourses() {
         subjectData.forEach(sub => sub.isReplaced = false);
         const courseMap = {};
-        
         subjectData.forEach((sub, index) => {
             const cleanName = cleanCourseName(sub.name);
             if (!courseMap[cleanName]) courseMap[cleanName] = [];
             courseMap[cleanName].push({ index, semIdx: semesterOrder.indexOf(sub.semester) });
         });
-
         Object.keys(courseMap).forEach(cleanName => {
             const history = courseMap[cleanName];
             if (history.length > 1) {
@@ -726,11 +677,12 @@
 
         let totalCredits = 0; let totalGpSub = 0; let totalGpSum = 0;
         let majorCredits = 0; let majorGpSub = 0; let majorGpSum = 0;
+        
+        // 4. 지정 학점 초과분 산출 버퍼 초기화
+        let rawEarned = { '공통교양': 0, '핵심교양': 0, '선택교양': 0, '전공필수': 0, '전공선택': 0, '심화필수': 0, '일반선택': 0 };
         let earnedRequirements = { '공통교양': 0, '핵심교양': 0, '선택교양': 0, '전공필수': 0, '전공선택': 0, '심화필수': 0, '일반선택': 0 };
-        let hasSeminar = false;
-        let approvedEnglishCount = 0;
-
-        // 학점 알파벳별 출현 빈도 카운팅용 (성적 분포 바 그래프 연동용)
+        
+        let hasSeminar = false; let approvedEnglishCount = 0;
         let gradeCounts = { 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C+': 0, 'C': 0, 'D+': 0, 'D': 0, 'F': 0, 'P': 0, 'NP': 0 };
         let validGradeTotalCount = 0;
 
@@ -749,18 +701,13 @@
             group.subCredits += credits;
 
             if (item.grade === 'F' || item.grade === 'NP' || item.isReplaced) {
-                // 평점 연산학점(F) 처리단 및 탈락과목 예외처리
                 if(item.grade === 'F' && !item.isReplaced) {
-                    group.gpSub += credits;
-                    totalGpSub += credits;
+                    group.gpSub += credits; totalGpSub += credits;
                     if(item.courseType.includes('전공') || item.courseType.includes('심화')) {
                         group.majorGpSub += credits; majorGpSub += credits;
                     }
                 }
-                if(!item.isReplaced) {
-                    gradeCounts[item.grade]++;
-                    validGradeTotalCount++;
-                }
+                if(!item.isReplaced) { gradeCounts[item.grade]++; validGradeTotalCount++; }
                 return;
             }
 
@@ -769,12 +716,11 @@
             gradeCounts[item.grade]++;
             validGradeTotalCount++;
 
-            if (earnedRequirements[item.courseType] !== undefined) earnedRequirements[item.courseType] += credits;
+            if (rawEarned[item.courseType] !== undefined) rawEarned[item.courseType] += credits;
             
             if(item.courseType === '전공필수' || item.courseType === '전공선택' || item.courseType === '심화필수') {
                 majorCredits += credits;
             }
-
             if(item.name.replace(/ /g, '').includes('학부세미나')) { hasSeminar = true; }
             if(item.isEnglish === '영어') { approvedEnglishCount++; }
 
@@ -788,42 +734,49 @@
             }
         });
 
-        // 에브리타임 스타일 메인 상단 전광판 수치 바인딩
+        // 4. 모든 교양 지정학점 이상 초과 이수학점 일반선택 강제 이월 엔진
+        let overflowToGeneral = 0;
+        const targetGeCategories = ['공통교양', '핵심교양', '선택교양'];
+        targetGeCategories.forEach(cat => {
+            const limit = gradRequirements[cat];
+            if(rawEarned[cat] > limit) {
+                earnedRequirements[cat] = limit;
+                overflowToGeneral += (rawEarned[cat] - limit);
+            } else {
+                earnedRequirements[cat] = rawEarned[cat];
+            }
+        });
+        
+        // 교양이 아닌 영역 그대로 바인딩 보존
+        const otherCategories = ['전공필수', '전공선택', '심화필수', '일반선택'];
+        otherCategories.forEach(cat => { earnedRequirements[cat] = rawEarned[cat]; });
+        earnedRequirements['일반선택'] += overflowToGeneral; // 초과학점 합산 처리
+
         document.getElementById('etTotalCredits').innerHTML = `${totalCredits}<span> / 130</span><span class="gear-icon" onclick="switchView('graduation')">⚙️</span>`;
         document.getElementById('etTotalGpa').innerHTML = totalGpSub > 0 ? (totalGpSum / totalGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
         document.getElementById('etMajorGpa').innerHTML = majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
-
-        // 졸업 사정 탭 내부 컴포넌트 데이터 바인딩
         document.getElementById('gradPercent').innerText = `${Math.min(100, Math.round((totalCredits / 130) * 100))}%`;
 
-        // ─── 에브리타임 성적 분포 가로 바 생성엔진 ───
         const distContainer = document.getElementById('etGradeDistribution');
         distContainer.innerHTML = '';
-        // 시각화용 상위 주요 메이저 성적 순서 배치
         const targetGrades = ['A+', 'A', 'B+', 'NP', 'P']; 
         const barColors = { 'A+': '#e57373', 'A': '#fbc02d', 'B+': '#81c784', 'NP': '#4db6ac', 'P': '#64b5f6' };
-
         targetGrades.forEach(g => {
             const count = gradeCounts[g] || 0;
             const pct = validGradeTotalCount > 0 ? Math.round((count / validGradeTotalCount) * 100) : 0;
             distContainer.innerHTML += `
                 <div class="et-dist-row">
                     <div class="et-dist-label">${g === 'A' ? 'A0' : g}</div>
-                    <div class="et-dist-bar-bg">
-                        <div class="et-dist-bar-fill" style="width: ${pct}%; background-color: ${barColors[g]}"></div>
-                    </div>
+                    <div class="et-dist-bar-bg"><div class="et-dist-bar-fill" style="width: ${pct}%; background-color: ${barColors[g]}"></div></div>
                     <div class="et-dist-pct">${pct}%</div>
                 </div>
             `;
         });
 
-        // ─── 현재 활성화된(선택된) 학기 상세 정보 및 과목 테이블 렌더링 ───
         const activeGroup = semesterGroups[activeSemester];
         document.getElementById('etActiveSemName').innerText = activeSemester;
-        
         const activeSemGpa = activeGroup.gpSub > 0 ? (activeGroup.gpSum / activeGroup.gpSub).toFixed(2) : '0.00';
         const activeSemMajorGpa = activeGroup.majorGpSub > 0 ? (activeGroup.majorGpSum / activeGroup.majorGpSub).toFixed(2) : '0.00';
-        
         document.getElementById('etActiveSemGpa').innerText = activeSemGpa;
         document.getElementById('etActiveSemMajorGpa').innerText = activeSemMajorGpa;
         document.getElementById('etActiveSemCredits').innerText = activeGroup.pubCredits;
@@ -832,123 +785,165 @@
         etTbody.innerHTML = '';
 
         if(activeGroup.subjects.length === 0) {
-            etTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--et-muted); padding:30px 0;">등록된 과목이 없습니다. 아래에서 추가해보세요!</td></tr>`;
+            etTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--et-muted); padding:30px 0;">등록된 과목이 없습니다.</td></tr>`;
         } else {
             activeGroup.subjects.forEach(sub => {
                 const origIdx = subjectData.findIndex(s => s === sub);
-                const isMajor = (sub.courseType.includes('전공') || sub.courseType.includes('심화'));
+                const isMajor = (sub.courseType === '전공필수' || sub.courseType === '전공선택' || sub.courseType === '심화필수');
                 
                 let appendLabels = '';
                 if(sub.isReplaced) appendLabels += ` <span class="badge badge-replaced">재수강 탈락</span>`;
                 else if(sub.isRetake === '재수강') appendLabels += ` <span class="badge badge-retake">재수강</span>`;
                 if(sub.isEnglish === '영어') appendLabels += ` <span class="badge badge-eng">영강</span>`;
 
+                // 1. 드래그 가능 뼈대 행 이식 및 3, 5번 기능 바인딩
                 etTbody.innerHTML += `
-                    <tr onclick="startEdit(${origIdx})">
+                    <tr class="draggable-tr" draggable="true" data-index="${origIdx}" onclick="toggleInlineEditPanel(${origIdx}, event)">
                         <td class="et-col-name">
                             ${sub.name}${appendLabels}
                             <div style="font-size:0.75rem; color:var(--et-muted); margin-top:2px;">${sub.courseType}</div>
                         </td>
                         <td class="et-col-center">${sub.credits}학점</td>
-                        <td class="et-col-center" style="font-weight:bold; color:${sub.grade.includes('A')?'#e53e3e':'#292929'}">${sub.grade === 'A' ? 'A0' : sub.grade}</td>
+                        <td class="et-col-center et-col-grade" onclick="openInlineGradePicker(${origIdx}, event)" style="font-weight:bold; color:${sub.grade.includes('A')?'#e53e3e':'#292929'}">
+                            ${sub.grade === 'A' ? 'A0' : sub.grade}
+                        </td>
                         <td class="et-col-center">
-                            <span class="et-chk-indicator ${isMajor ? 'checked' : ''}"></span>
+                            <span class="et-chk-indicator ${isMajor ? 'checked' : ''}" onclick="toggleMajorStatus(${origIdx}, event)"></span>
                         </td>
                     </tr>
                 `;
+
+                // 5. 인라인 확장 실시간 편집 패널 폼 렌더링구간
+                if(activeInlineEditIndex === origIdx) {
+                    etTbody.innerHTML += `
+                        <tr class="inline-edit-row">
+                            <td colspan="4" style="padding: 12px 8px; border-bottom:1px solid var(--et-border);">
+                                <div class="inline-edit-box">
+                                    <div class="inline-edit-inputs">
+                                        <input type="text" id="inlineName-${origIdx}" value="${sub.name}">
+                                        <select id="inlineCredits-${origIdx}">
+                                            <option value="1" ${sub.credits==1?'selected':''}>1학점</option>
+                                            <option value="2" ${sub.credits==2?'selected':''}>2학점</option>
+                                            <option value="3" ${sub.credits==3?'selected':''}>3학점</option>
+                                            <option value="4" ${sub.credits==4?'selected':''}>4학점</option>
+                                        </select>
+                                        <select id="inlineType-${origIdx}">
+                                            <option value="공통교양" ${sub.courseType=='공통교양'?'selected':''}>공통교양</option>
+                                            <option value="핵심교양" ${sub.courseType=='핵심교양'?'selected':''}>핵심교양</option>
+                                            <option value="선택교양" ${sub.courseType=='선택교양'?'selected':''}>선택교양</option>
+                                            <option value="전공필수" ${sub.courseType=='전공필수'?'selected':''}>전공필수</option>
+                                            <option value="전공선택" ${sub.courseType=='전공선택'?'selected':''}>전공선택</option>
+                                            <option value="심화필수" ${sub.courseType=='심화필수'?'selected':''}>심화필수</option>
+                                            <option value="일반선택" ${sub.courseType=='일반선택'?'selected':''}>일반선택</option>
+                                        </select>
+                                    </div>
+                                    <div class="inline-edit-btns">
+                                        <button class="btn btn-danger" onclick="deleteSubject(${origIdx})">삭제</button>
+                                        <button class="btn btn-primary" style="background-color:var(--et-dark)" onclick="saveInlineFields(${origIdx})">저장</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
             });
         }
 
-        // 비교과 미션 및 영역별 상세 조건 바인딩 (기존 스크립트 엔진 원형 유지)
         bindGraduationViewElements(hasSeminar, approvedEnglishCount, totalCredits, earnedRequirements);
+        bindEtDragAndDrop(); 
+    }
+
+    // 1. 학점계산기 전용 드래그 앤 드롭 정렬 엔진 부착 구문
+    function bindEtDragAndDrop() {
+        const tbody = document.getElementById('etSubjectTableBody');
+        let dragEl = null;
+
+        tbody.querySelectorAll('.draggable-tr').forEach(row => {
+            row.addEventListener('dragstart', () => {
+                dragEl = row;
+                row.classList.add('dragging');
+            });
+            row.addEventListener('dragend', () => {
+                row.classList.remove('dragging');
+                const currentRows = Array.from(tbody.querySelectorAll('.draggable-tr'));
+                const currentIndices = currentRows.map(r => parseInt(r.getAttribute('data-index')));
+                
+                const nonSemData = subjectData.filter(item => item.semester !== activeSemester);
+                const reorderedSemData = currentIndices.map(idx => subjectData[idx]);
+
+                subjectData = [...nonSemData, ...reorderedSemData];
+                updateDashboard();
+            });
+        });
+
+        tbody.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(tbody, e.clientY);
+            const draggable = document.querySelector('.dragging');
+            if (draggable && draggable.parentNode === tbody) {
+                if (afterElement == null) tbody.appendChild(draggable);
+                else tbody.insertBefore(draggable, afterElement);
+            }
+        });
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.draggable-tr:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            else return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     function bindGraduationViewElements(hasSeminar, approvedEnglishCount, totalCredits, earnedRequirements) {
         // 1. 학부세미나
-        const barSeminar = document.getElementById('barSeminar');
-        const boardSeminar = document.getElementById('boardSeminar');
-        const titleSeminar = document.getElementById('titleSeminar');
+        const barSeminar = document.getElementById('barSeminar'); const boardSeminar = document.getElementById('boardSeminar'); const titleSeminar = document.getElementById('titleSeminar');
         if(hasSeminar) {
-            barSeminar.style.width = "100%"; barSeminar.className = "status-gauge-fill fill-pass";
-            boardSeminar.innerText = "100% (Pass)"; boardSeminar.className = "status-indicator text-pass-color";
-            titleSeminar.className = "mission-title text-pass-color";
+            barSeminar.style.width = "100%"; barSeminar.className = "status-gauge-fill fill-pass"; boardSeminar.innerText = "100% (Pass)"; boardSeminar.className = "status-indicator text-pass-color"; titleSeminar.className = "mission-title text-pass-color";
         } else {
-            barSeminar.style.width = "0%"; barSeminar.className = "status-gauge-fill fill-fail";
-            boardSeminar.innerText = "0%"; boardSeminar.className = "status-indicator text-fail-color";
-            titleSeminar.className = "mission-title text-fail-color";
+            barSeminar.style.width = "0%"; barSeminar.className = "status-gauge-fill fill-fail"; boardSeminar.innerText = "0%"; boardSeminar.className = "status-indicator text-fail-color"; titleSeminar.className = "mission-title text-fail-color";
         }
-
         // 2. 인권과 성평등 교육
         const genderCount = document.getElementById('genderEduCount') ? parseInt(document.getElementById('genderEduCount').value) : 0;
-        const barGender = document.getElementById('barGender');
-        const boardGender = document.getElementById('boardGender');
-        const titleGender = document.getElementById('titleGender');
-        const genderPct = Math.round((genderCount / 4) * 100);
+        const barGender = document.getElementById('barGender'); const boardGender = document.getElementById('boardGender'); const titleGender = document.getElementById('titleGender'); const genderPct = Math.round((genderCount / 4) * 100);
         barGender.style.width = `${genderPct}%`;
         if(genderCount === 4) {
-            barGender.className = "status-gauge-fill fill-pass";
-            boardGender.innerText = "100% (Pass)"; boardGender.className = "status-indicator text-pass-color";
-            titleGender.className = "mission-title text-pass-color";
+            barGender.className = "status-gauge-fill fill-pass"; boardGender.innerText = "100% (Pass)"; boardGender.className = "status-indicator text-pass-color"; titleGender.className = "mission-title text-pass-color";
         } else {
-            barGender.className = "status-gauge-fill fill-fail";
-            boardGender.innerText = `${genderPct}%`; boardGender.className = "status-indicator text-fail-color";
-            titleGender.className = "mission-title text-fail-color";
+            barGender.className = "status-gauge-fill fill-fail"; boardGender.innerText = `${genderPct}%`; boardGender.className = "status-indicator text-fail-color"; titleGender.className = "mission-title text-fail-color";
         }
-
         // 3. 영어강의 이수
-        const barEnglish = document.getElementById('barEnglish');
-        const boardEnglishCount = document.getElementById('boardEnglishCount');
-        const titleEnglish = document.getElementById('titleEnglish');
-        const engPct = Math.min(100, Math.round((approvedEnglishCount / 5) * 100));
+        const barEnglish = document.getElementById('barEnglish'); const boardEnglishCount = document.getElementById('boardEnglishCount'); const titleEnglish = document.getElementById('titleEnglish'); const engPct = Math.min(100, Math.round((approvedEnglishCount / 5) * 100));
         barEnglish.style.width = `${engPct}%`;
         if(approvedEnglishCount >= 5) {
-            barEnglish.className = "status-gauge-fill fill-pass";
-            boardEnglishCount.innerText = "100% (Pass)"; boardEnglishCount.className = "status-indicator text-pass-color";
-            titleEnglish.className = "mission-title text-pass-color";
+            barEnglish.className = "status-gauge-fill fill-pass"; boardEnglishCount.innerText = "100% (Pass)"; boardEnglishCount.className = "status-indicator text-pass-color"; titleEnglish.className = "mission-title text-pass-color";
         } else {
-            barEnglish.className = "status-gauge-fill fill-fail";
-            boardEnglishCount.innerText = `${engPct}%`; boardEnglishCount.className = "status-indicator text-fail-color";
-            titleEnglish.className = "mission-title text-fail-color";
+            barEnglish.className = "status-gauge-fill fill-fail"; boardEnglishCount.innerText = `${engPct}%`; boardEnglishCount.className = "status-indicator text-fail-color"; titleEnglish.className = "mission-title text-fail-color";
         }
-
         // 4. 공인영어성적 추가 바인딩
         const engStatus = document.getElementById('englishStatus') ? document.getElementById('englishStatus').value : '미제출';
-        const barEnglishTest = document.getElementById('barEnglishTest');
-        const boardEnglishTest = document.getElementById('boardEnglishTest');
-        const titleEnglishTest = document.getElementById('titleEnglishTest');
+        const barEnglishTest = document.getElementById('barEnglishTest'); const boardEnglishTest = document.getElementById('boardEnglishTest'); const titleEnglishTest = document.getElementById('titleEnglishTest');
         if(engStatus === '패스') {
-            barEnglishTest.style.width = "100%"; barEnglishTest.className = "status-gauge-fill fill-pass";
-            boardEnglishTest.innerText = "100% (Pass)"; boardEnglishTest.className = "status-indicator text-pass-color";
-            titleEnglishTest.className = "mission-title text-pass-color";
+            barEnglishTest.style.width = "100%"; barEnglishTest.className = "status-gauge-fill fill-pass"; boardEnglishTest.innerText = "100% (Pass)"; boardEnglishTest.className = "status-indicator text-pass-color"; titleEnglishTest.className = "mission-title text-pass-color";
         } else {
-            barEnglishTest.style.width = "0%"; barEnglishTest.className = "status-gauge-fill fill-fail";
-            boardEnglishTest.innerText = "0%"; boardEnglishTest.className = "status-indicator text-fail-color";
-            titleEnglishTest.className = "mission-title text-fail-color";
+            barEnglishTest.style.width = "0%"; barEnglishTest.className = "status-gauge-fill fill-fail"; boardEnglishTest.innerText = "0%"; boardEnglishTest.className = "status-indicator text-fail-color"; titleEnglishTest.className = "mission-title text-fail-color";
         }
-
         // 5. 졸업논문 추가 바인딩
         const thesisStatus = document.getElementById('thesisStatus') ? document.getElementById('thesisStatus').value : '미제출';
-        const barThesis = document.getElementById('barThesis');
-        const boardThesis = document.getElementById('boardThesis');
-        const titleThesis = document.getElementById('titleThesis');
+        const barThesis = document.getElementById('barThesis'); const boardThesis = document.getElementById('boardThesis'); const titleThesis = document.getElementById('titleThesis');
         if(thesisStatus === '패스') {
-            barThesis.style.width = "100%"; barThesis.className = "status-gauge-fill fill-pass";
-            boardThesis.innerText = "100% (Pass)"; boardThesis.className = "status-indicator text-pass-color";
-            titleThesis.className = "mission-title text-pass-color";
+            barThesis.style.width = "100%"; barThesis.className = "status-gauge-fill fill-pass"; boardThesis.innerText = "100% (Pass)"; boardThesis.className = "status-indicator text-pass-color"; titleThesis.className = "mission-title text-pass-color";
         } else {
-            barThesis.style.width = "0%"; barThesis.className = "status-gauge-fill fill-fail";
-            boardThesis.innerText = "0%"; boardThesis.className = "status-indicator text-fail-color";
-            titleThesis.className = "mission-title text-fail-color";
+            barThesis.style.width = "0%"; barThesis.className = "status-gauge-fill fill-fail"; boardThesis.innerText = "0%"; boardThesis.className = "status-indicator text-fail-color"; titleThesis.className = "mission-title text-fail-color";
         }
 
-        // 이수 영역별 다이내믹 게이지 바 할당
         const barContainer = document.getElementById('requirementBars');
         barContainer.innerHTML = '';
         Object.keys(gradRequirements).forEach(key => {
-            const req = gradRequirements[key];
-            const earned = earnedRequirements[key];
-            const pct = Math.min(100, Math.round((earned / req) * 100));
-            let barColor = 'var(--primary-color)';
+            const req = gradRequirements[key]; const earned = earnedRequirements[key]; const pct = Math.min(100, Math.round((earned / req) * 100));
+            let barColor = 'var(--et-red)';
             if(key.includes('전공') || key.includes('심화')) barColor = 'var(--secondary-color)';
             if(key.includes('일반')) barColor = 'var(--et-muted)';
 
@@ -960,43 +955,26 @@
             `;
         });
 
-        // 그래프 디플로이 트리거 체인 호출
-        drawCharts(totalCredits);
+        drawCharts(hasSeminar, genderPct, engPct, engStatus, thesisStatus);
     }
 
-    function drawCharts(totalCredits) {
-        // 에브리타임 스타일 선형 꺾은선 추이 그래프 커스텀 드로잉
+    function drawCharts(hasSeminar, genderPct, engPct, engStatus, thesisStatus) {
         let activeSemesters = [], totalChartData = [], majorChartData = [];
-        
-        // 각 학기별 순회 가공 처리 진행
         semesterOrder.forEach(sem => {
-            let subCredits = 0; let gpSub = 0; let gpSum = 0;
-            let majorGpSub = 0; let majorGpSum = 0;
-            let hasData = false;
-
+            let gpSub = 0; let gpSum = 0; let majorGpSub = 0; let majorGpSum = 0; let hasData = false;
             subjectData.forEach(item => {
                 if(item.semester !== sem || item.isReplaced) return;
-                hasData = true;
-                const credits = Number(item.credits);
-                const pnt = gradePoints[item.grade];
-
+                hasData = true; const credits = Number(item.credits); const pnt = gradePoints[item.grade];
                 if(item.grade === 'F') {
-                    gpSub += credits;
-                    if(item.courseType.includes('전공') || item.courseType.includes('심화')) majorGpSub += credits;
-                    return;
+                    gpSub += credits; if(item.courseType.includes('전공') || item.courseType.includes('심화')) majorGpSub += credits; return;
                 }
-
                 if(pnt !== null) {
                     gpSub += credits; gpSum += (pnt * credits);
-                    if(item.courseType.includes('전공') || item.courseType.includes('심화')) {
-                        majorGpSub += credits; majorGpSum += (pnt * credits);
-                    }
+                    if(item.courseType.includes('전공') || item.courseType.includes('심화')) { majorGpSub += credits; majorGpSum += (pnt * credits); }
                 }
             });
-
             if(hasData) {
-                let shortName = sem.replace('학년 ', '-').replace('계절', '');
-                activeSemesters.push(shortName);
+                let shortName = sem.replace('학년 ', '-').replace('계절', ''); activeSemesters.push(shortName);
                 totalChartData.push(gpSub > 0 ? (gpSum / gpSub).toFixed(2) : '0.00');
                 majorChartData.push(majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) : null);
             }
@@ -1009,14 +987,12 @@
             data: {
                 labels: activeSemesters,
                 datasets: [
-                    { label: '전체', data: totalChartData, borderColor: '#c62917', borderWidth: 2, pointBackgroundColor: '#c62917', pointRadius: 4, fill: false, tension: 0.1 },
-                    { label: '전공', data: majorChartData, borderColor: '#a6a6a6', borderWidth: 2, pointBackgroundColor: '#a6a6a6', pointRadius: 4, fill: false, tension: 0.1 }
+                    { data: totalChartData, borderColor: '#c62917', borderWidth: 2, pointBackgroundColor: '#c62917', pointRadius: 4, fill: false, tension: 0.1 },
+                    { data: majorChartData, borderColor: '#a6a6a6', borderWidth: 2, pointBackgroundColor: '#a6a6a6', pointRadius: 4, fill: false, tension: 0.1 }
                 ]
             },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } },
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
                 scales: { 
                     y: { min: 1.0, max: 4.5, grid: { color: '#eaeaea' }, ticks: { font: { size: 10 } } },
                     x: { grid: { display: false }, ticks: { font: { size: 10 } } }
@@ -1024,24 +1000,48 @@
             }
         });
 
-        // 도넛형 졸업 원형 그래프
-        const ctxGrad = document.getElementById('gradDoughnutChart').getContext('2d');
-        if (gradDoughnutChart) gradDoughnutChart.destroy();
-        const remainingCredits = Math.max(0, 130 - totalCredits);
-        gradDoughnutChart = new Chart(ctxGrad, {
-            type: 'doughnut',
+        // 6. 원형 그래프 철거 후 다각형 오각형 레이더 분포 맵 커스텀 셋업
+        const ctxGrad = document.getElementById('gradRadarChart').getContext('2d');
+        if (gradRadarChart) gradRadarChart.destroy();
+        gradRadarChart = new Chart(ctxGrad, {
+            type: 'radar',
             data: {
-                labels: ['취득 학점', '남은 학점'],
-                datasets: [{ data: [totalCredits, remainingCredits], backgroundColor: ['#10b981', '#e2e8f0'], borderWidth: 0 }]
+                labels: ['세미나', '인권성평등', '영강이수', '공인영어', '졸업논문'],
+                datasets: [{
+                    data: [
+                        hasSeminar ? 100 : 0,
+                        genderPct,
+                        engPct,
+                        engStatus === '패스' ? 100 : 0,
+                        thesisStatus === '패스' ? 100 : 0
+                    ],
+                    backgroundColor: 'rgba(198, 41, 23, 0.15)',
+                    borderColor: 'var(--et-red)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'var(--et-red)',
+                    pointRadius: 3
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    r: {
+                        angleLines: { display: true, color: '#e3e3e3' },
+                        grid: { color: '#eaeaea' },
+                        suggestedMin: 0,
+                        suggestedMax: 100,
+                        ticks: { stepSize: 20, display: false },
+                        pointLabels: { font: { size: 11, weight: '700' }, color: '#444' }
+                    }
+                }
+            }
         });
     }
 
-    // 과목 입력 폼 핸들러
     document.getElementById('subjectForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const editIndex = document.getElementById('editIndex').value;
         const semester = document.getElementById('semester').value;
         const name = document.getElementById('subjectName').value.trim();
         const credits = parseInt(document.getElementById('credits').value);
@@ -1050,83 +1050,23 @@
         const isRetake = document.getElementById('isRetake').value;
         const isEnglish = document.getElementById('isEnglish').value;
 
-        const newData = { semester, name, credits, grade, courseType, isRetake, isEnglish };
-
-        if (editIndex === "-1") {
-            subjectData.push(newData);
-        } else {
-            subjectData[editIndex] = newData;
-        }
-        
-        resetFormState();
-        activeSemester = semester; // 추가/수정한 과목의 학기 탭으로 포커싱 이동
+        subjectData.push({ semester, name, credits, grade, courseType, isRetake, isEnglish });
+        this.reset();
+        activeSemester = semester;
         changeActiveSemesterTab(activeSemester);
     });
-
-    function startEdit(index) {
-        const item = subjectData[index];
-        document.getElementById('editIndex').value = index;
-        document.getElementById('semester').value = item.semester;
-        document.getElementById('subjectName').value = item.name;
-        document.getElementById('credits').value = item.credits;
-        document.getElementById('grade').value = item.grade;
-        document.getElementById('courseType').value = item.courseType;
-        document.getElementById('isRetake').value = item.isRetake || '일반';
-        document.getElementById('isEnglish').value = item.isEnglish || '일반';
-        
-        document.getElementById('formTitle').innerText = "과목 성적 수정 / 삭제 처리기";
-        document.getElementById('submitBtn').innerText = "수정 완료";
-        
-        // 에브리타임 형태 유지보수를 위해 테이블 내에 삭제를 두지 않고 에딧폼 진입 시 삭제버튼 동적 생성 노출
-        let existDelBtn = document.getElementById('dynamicDelBtn');
-        if(!existDelBtn){
-            const delBtn = document.createElement('button');
-            delBtn.type = "button";
-            delBtn.id = "dynamicDelBtn";
-            delBtn.className = "btn btn-danger";
-            delBtn.innerText = "과목 삭제";
-            delBtn.style.gridColumn = "span 1";
-            delBtn.onclick = () => deleteSubject(index);
-            document.getElementById('subjectForm').appendChild(delBtn);
-        } else {
-            existDelBtn.onclick = () => deleteSubject(index);
-        }
-        document.getElementById('cancelEditBtn').style.display = 'inline-block';
-        scrollToInputForm();
-    }
-
-    function resetFormState() {
-        document.getElementById('subjectForm').reset();
-        document.getElementById('editIndex').value = "-1";
-        document.getElementById('formTitle').innerText = "과목 성적 입력 / 수정 / 관리";
-        document.getElementById('submitBtn').innerText = "추가";
-        document.getElementById('cancelEditBtn').style.display = 'none';
-        const existDelBtn = document.getElementById('dynamicDelBtn');
-        if(existDelBtn) existDelBtn.remove();
-        document.getElementById('semester').value = activeSemester;
-    }
 
     function deleteSubject(index) {
         if(confirm('이 과목을 삭제하시겠습니까?')) {
             subjectData.splice(index, 1);
-            resetFormState();
+            activeInlineEditIndex = -1;
             updateDashboard();
         }
     }
 
-    // 시스템 부팅 런처 체인
     loadExtraRequirements();
     initFormAndTabs();
     updateDashboard();
-</script>
-<script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => { console.log('PWA 등록 성공', reg); })
-          .catch(err => { console.log('PWA 등록 실패', err); });
-      });
-    }
 </script>
 </body>
 </html>
