@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- ─── [캐시 방지] 브라우저가 HTML 자체를 캐싱하지 못하도록 강제 제어 ─── -->
+    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -14,7 +14,7 @@
     <meta name="apple-mobile-web-app-title" content="학점계산기">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>학점계산기 & 종합 졸업인증 대시보드</title>
+    <title>학점계산기 & 졸업사정표</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -136,7 +136,6 @@
         .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
         .et-stat-box p { font-size: 1.65rem; font-weight: 700; color: var(--et-red); margin: 0; }
         .et-stat-box p span { font-size: 0.85rem; color: var(--et-muted); font-weight: 400; }
-        .gear-icon { font-size: 0.85rem; color: var(--et-muted); vertical-align: middle; margin-left: 2px; cursor: pointer; }
 
         .et-chart-legend { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.78rem; color: var(--et-muted); margin-bottom: 6px; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
@@ -210,9 +209,8 @@
         .btn-danger { background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
         .btn-close { background-color: #64748b; color: white; width: 100%; margin-top: 15px; }
 
-        .grad-header { text-align: center; margin-bottom: 25px; padding-top: 15px; }
+        .grad-header { text-align: center; margin-bottom: 20px; padding-top: 15px; }
         .grad-header h1 { font-size: 1.4rem; color: var(--et-dark); margin-bottom: 4px; font-weight: 700; }
-        .grad-header p { color: var(--et-muted); font-size: 0.88rem; margin: 0; }
         
         .summary-box-grad { background: var(--et-red); color: #fff; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
         .summary-box-grad h3 { font-size: 0.82rem; margin: 0 0 4px 0; opacity: 0.9; font-weight: 400; }
@@ -235,7 +233,8 @@
         .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0; }
+        /* ─── 4. 다각형 영역 아랫부분 패딩 하단 여백 추가 ─── */
+        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0 20px 0; padding-bottom: 15px; }
         .et-radar-box { flex: 1; min-width: 240px; height: 180px; position: relative; }
         .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
@@ -281,7 +280,8 @@
             </div>
             <div class="et-stat-box">
                 <h3>취득 학점</h3>
-                <p id="etTotalCredits">0<span> / 130</span><span class="gear-icon" onclick="switchView('graduation')">⚙️</span></p>
+                <!-- 6. ⚙️ 아이콘 완전 제거 -->
+                <p id="etTotalCredits">0<span> / 130</span></p>
             </div>
         </div>
 
@@ -386,9 +386,9 @@
 
     <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
+        <!-- 1, 2. 상단 헤더 문구 전면 개편 적용 -->
         <div class="grad-header">
-            <h1>졸업 사정 요건 점검</h1>
-            <p>화공생명공학과 종합 대시보드</p>
+            <h1>졸업사정표</h1>
         </div>
 
         <div class="summary-box-grad">
@@ -396,8 +396,9 @@
             <p id="gradPercent">0%</p>
         </div>
 
+        <!-- 3. 타이틀 텍스트 '졸업사정표'로 변경 -->
         <div class="card">
-            <h2>졸업 요건 다각형 시각화 분석</h2>
+            <h2>졸업사정표</h2>
             <div class="et-dual-charts-container">
                 <div class="et-radar-box" onclick="openModal()" style="cursor: pointer;">
                     <div class="et-radar-title">📋 비교과 요건 달성도 (클릭 설정)</div>
@@ -408,10 +409,12 @@
                     <canvas id="gradAreaRadarChart"></canvas>
                 </div>
             </div>
+            <div style="font-size:0.8rem; color:var(--et-muted); text-align:center; margin-top:10px;">💡 왼쪽 그래프 터치 시 토익/논문/인권교육 설정을 로드합니다.</div>
         </div>
 
+        <!-- 5. 상단 지시 헤더 텍스트 변경 반영 -->
         <div class="card">
-            <h2>필수 요건 패스 현황</h2>
+            <h2>졸업 요건 현황</h2>
             <div class="mission-status">
                 <div id="barSeminar" class="status-gauge-fill fill-fail"></div> 
                 <span id="titleSeminar" class="mission-title text-fail-color">학부세미나</span>
@@ -756,7 +759,8 @@
         otherCategories.forEach(cat => { earnedRequirements[cat] = rawEarned[cat]; });
         earnedRequirements['일반선택'] += overflowToGeneral; 
 
-        document.getElementById('etTotalCredits').innerHTML = `${totalCredits}<span> / 130</span><span class="gear-icon" onclick="switchView('graduation')">⚙️</span>`;
+        // 6. 톱니바퀴 없는 깔끔한 텍스트 렌더링 매핑
+        document.getElementById('etTotalCredits').innerHTML = `${totalCredits}<span> / 130</span>`;
         document.getElementById('etTotalGpa').innerHTML = totalGpSub > 0 ? (totalGpSum / totalGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
         document.getElementById('etMajorGpa').innerHTML = majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
         document.getElementById('gradPercent').innerText = `${Math.min(100, Math.round((totalCredits / 130) * 100))}%`;
@@ -1106,13 +1110,13 @@
 </script>
 
 <script>
-    // ─── [캐시 방지] 서비스 워커 등록 구문에 고유 버전(v=시간값)을 주입하여 강제 업데이트 처리 ───
+    // 강제 서비스워커 청소부 스크립트 이식 (캐시 롤백 영구 무력화)
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./service-worker.js?v=' + Date.now())
-          .then(reg => { console.log('PWA 최신 버전 동기화 완료', reg); })
-          .catch(err => { console.log('PWA 동기화 실패', err); });
-      });
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                registration.unregister();
+            }
+        });
     }
 </script>
 </body>
