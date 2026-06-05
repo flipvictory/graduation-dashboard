@@ -8,7 +8,7 @@
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#c62917">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link class="apple-touch-icon" href="icons/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="학점계산기">
@@ -32,6 +32,8 @@
             --bg-color: #ffffff;
             --card-bg: #ffffff;
             --danger-color: #ef4444;
+            /* [개선 1번] 브라우저/모바일 시스템 달력 팝업 테마 컬러 색상 강제 일치 */
+            accent-color: #c62917;
         }
 
         body {
@@ -129,18 +131,6 @@
         .et-tab.active::after {
             content: ''; position: absolute; bottom: 0; left: 12px; right: 12px; height: 2px; background-color: #000000;
         }
-
-        .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
-        .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
-        .et-stat-box p { font-size: 1.65rem; font-weight: 700; color: var(--et-red); margin: 0; }
-        .et-stat-box p span { font-size: 0.85rem; color: var(--et-muted); font-weight: 400; }
-
-        .et-chart-legend { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.78rem; color: var(--et-muted); margin-bottom: 6px; }
-        .legend-item { display: flex; align-items: center; gap: 4px; }
-        .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
-        .legend-dot.total { background-color: var(--et-red); }
-        .legend-dot.major { background-color: var(--et-muted); }
-        .et-chart-container { position: relative; height: 160px; width: 100%; margin-bottom: 25px; }
 
         .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
         .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
@@ -252,11 +242,27 @@
         .todo-input-box input[type="text"] { width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.92rem; outline: none; box-sizing: border-box; }
         .todo-input-box input:focus { border-color: var(--et-red); }
         
-        .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
-        .todo-datetime-group { display: flex; flex-direction: column; gap: 2px; }
-        .todo-datetime-group span { font-size: 0.72rem; color: var(--et-muted); font-weight: bold; padding-left: 2px; }
-        .todo-sub-fields input { width: 100%; padding: 8px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.85rem; box-sizing: border-box; outline: none; background:#fff; }
-        .todo-sub-fields input:focus { border-color: var(--et-red); }
+        .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; }
+        @media (max-width: 480px) {
+            .todo-sub-fields { grid-template-columns: 1fr; gap: 8px; }
+        }
+        
+        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; }
+        .todo-datetime-group span { font-size: 0.75rem; color: var(--et-dark); font-weight: 700; padding-left: 2px; }
+        
+        /* [개선 1번] 모바일 기기 자체 인라인 테두리 및 폼 서식 테마 최적화 */
+        .todo-sub-fields input { 
+            width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; 
+            font-size: 0.88rem; box-sizing: border-box; outline: none; background: #fff; 
+            color: var(--et-dark); transition: all 0.2s ease;
+        }
+        .todo-sub-fields input:focus { border-color: var(--et-red); background-color: var(--et-red-light); }
+        
+        /* [개선 1번] 네이티브 캘린더 선택기 아이콘 테마화 컬러 필터링 */
+        .todo-sub-fields input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
+        }
         
         .todo-scroll-viewport {
             max-height: 240px; 
@@ -275,7 +281,6 @@
         .todo-list-section-title { font-size: 0.95rem; font-weight: 700; color: var(--et-dark); margin: 20px 0 8px 2px; }
         .todo-list { list-style: none; padding: 0; margin: 0; }
         
-        /* 할 일 리스트 컨테이너 내 항목 개별 블록 구조 */
         .todo-item-container { display: flex; flex-direction: column; background: #fff; margin: 6px 0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid transparent; }
         .todo-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 8px; font-size: 0.95rem; }
         .todo-left { display: flex; align-items: flex-start; gap: 10px; width: 85%; cursor: pointer; padding: 2px; }
@@ -284,36 +289,63 @@
         .todo-text.done { text-decoration: line-through; color: var(--et-muted); }
         .todo-meta-line { font-size: 0.78rem; color: var(--et-muted); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 
-        /* ─── 2. 할 일 인라인 밀착 편집 레이아웃 상자 ─── */
         .todo-inline-edit-box { display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; background-color: #fdfdfd; border-top: 1px dashed var(--et-border); }
         .todo-inline-edit-box input { padding: 6px 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; outline: none; }
         .todo-inline-edit-box input:focus { border-color: var(--et-red); }
+        
+        /* [개선 1번] 수정용 대화상자 내부 날짜 필드 전용 웹킷 색상 적용 */
+        .todo-inline-edit-box input[type="datetime-local"] { accent-color: var(--et-red); }
+        .todo-inline-edit-box input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
+        }
 
-        .et-cal-container { width: 100%; border: 1px solid var(--et-border); border-radius: 12px; overflow: hidden; background: #fff; margin-bottom: 20px; padding: 12px 10px; box-sizing: border-box; }
-        .et-cal-top-control { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .et-cal-year-badge { background: #f2f2f2; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; border: none; }
-        .et-cal-month-title { font-size: 1.8rem; font-weight: 700; color: #000; margin: 4px 0 10px 4px; }
-        .et-cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--et-muted); padding-bottom: 8px; border-bottom: 1px solid var(--et-light-gray); }
+        .et-cal-container { width: 100%; border: 1px solid var(--et-border); border-radius: 14px; overflow: hidden; background: #fff; margin-bottom: 20px; padding: 14px 12px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .et-cal-top-control { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .et-cal-year-badge { background: #f2f2f2; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 6px; cursor: pointer; border: none; transition: background 0.2s; }
+        .et-cal-year-badge:active { background: #e2e2e2; }
+        .et-cal-month-title { font-size: 1.5rem; font-weight: 700; color: #000; margin: 0 auto 0 4px; }
+        .et-cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--et-muted); padding-bottom: 8px; border-bottom: 1px solid var(--et-light-gray); margin-bottom: 4px; }
         .et-cal-main-body { display: grid; grid-template-columns: repeat(7, 1fr); background: #fff; }
         
-        .et-cal-day-cell { min-height: 75px; border-bottom: 1px solid #f8f8f8; border-right: 1px solid #f8f8f8; padding: 4px 0; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; position: relative; }
-        .et-cal-date-num { font-size: 0.85rem; font-weight: 700; color: #000; margin-bottom: 4px; align-self: center; }
+        /* [개선 3번] 끊김 없는 타임라인 바 연결을 위해 좌우 셀 패딩 완전 제거 */
+        .et-cal-day-cell { 
+            height: 82px; 
+            max-height: 82px; 
+            overflow: hidden; 
+            border-bottom: 1px solid #f9f9f9; 
+            border-right: 1px solid #f9f9f9; 
+            padding: 2px 0px; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: stretch; 
+            position: relative; 
+        }
+        .et-cal-date-num { font-size: 0.8rem; font-weight: 700; color: #000; margin-bottom: 4px; align-self: center; z-index: 5; }
         .et-cal-day-cell.other-month .et-cal-date-num { color: #e0e0e0; font-weight: 400; }
         .et-cal-day-cell.sun .et-cal-date-num { color: #e53e3e; }
         .et-cal-day-cell.sat .et-cal-date-num { color: #3182ce; }
-        .et-cal-day-cell.today-focus { background-color: #fff9f9; }
-        .et-cal-day-cell.today-focus .et-cal-date-num { background: var(--et-red); color: #fff !important; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-size: 0.75rem; }
         
-        .et-cal-event-pill { width: 100%; height: 17px; font-size: 0.68rem; font-weight: bold; padding: 2px 6px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; line-height: 13px; margin-bottom: 2px; }
-        .pill-start { border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin-left: 2px; width: calc(100% - 2px); }
-        .pill-end { border-top-right-radius: 4px; border-bottom-right-radius: 4px; margin-right: 2px; width: calc(100% - 2px); }
-        .pill-start.pill-end { margin-left: 2px; margin-right: 2px; width: calc(100% - 4px); border-radius: 4px; }
-        .pill-middle { border-radius: 0; margin-left: 0; margin-right: 0; width: 100%; }
+        .et-cal-day-cell.today-focus { background-color: #fffafb; }
+        .et-cal-day-cell.today-focus .et-cal-date-num { background: var(--et-red); color: #fff !important; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-size: 0.72rem; display: inline-block; }
+        
+        .et-cal-event-pill { width: 100%; height: 17px; font-size: 0.65rem; font-weight: bold; padding: 2px 5px; box-sizing: border-box; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; line-height: 13px; margin-bottom: 2px; border: none; }
+        
+        /* [개선 3번] 다중 일정이 이어질 때 셀 테두리를 자연스럽게 초과 덮어씌우는 정밀 여백 설계 */
+        .pill-start { border-top-left-radius: 4px; border-bottom-left-radius: 4px; margin-left: 2px; width: calc(100% - 2px); position: relative; z-index: 2; }
+        .pill-middle { border-radius: 0; margin-left: 0; width: calc(100% + 1px); position: relative; z-index: 3; }
+        .pill-end { border-top-right-radius: 4px; border-bottom-right-radius: 4px; margin-right: 2px; width: calc(100% + 1px); position: relative; z-index: 2; }
+        .pill-start.pill-end { margin-left: 2px; margin-right: 2px; width: calc(100% - 4px); border-radius: 4px; z-index: 2; }
 
-        .et-cal-event-pill.blue-pill { background-color: #e3f2fd; color: #1e88e5; }
+        .et-cal-event-pill.color-pill-0 { background-color: #ffebee; color: var(--et-red); }
+        .et-cal-event-pill.color-pill-1 { background-color: #e3f2fd; color: #1e88e5; }
+        .et-cal-event-pill.color-pill-2 { background-color: #f3e5f5; color: #8e24aa; }
+        .et-cal-event-pill.color-pill-3 { background-color: #fff3e0; color: #e65100; }
+        .et-cal-event-pill.color-pill-4 { background-color: #e0f2f1; color: #004d40; }
+        
         .et-cal-event-pill.green-pill { background-color: #e8f5e9; color: #43a047; }
-        .et-cal-event-pill.red-pill { background-color: #ffebee; color: var(--et-red); }
         .et-cal-event-pill.done-pill { background-color: #f2f2f2; color: #a6a6a6; text-decoration: line-through; }
+        
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background-color: white; padding: 24px; border-radius: 20px; max-width: 450px; width: 85%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
         .modal-content h3 { margin-top: 0; border-bottom: 2px solid var(--et-border); padding-bottom: 10px; color: var(--et-red); font-size: 1.1rem; }
@@ -541,7 +573,7 @@
                         <span>마감 일시</span>
                         <input type="datetime-local" id="todoDeadline">
                     </div>
-                    <input type="text" id="todoLocation" placeholder="장소 (기본없음)" style="grid-column: span 2; margin-top: 2px;">
+                    <input type="text" id="todoLocation" placeholder="장소 (기본없음)" style="grid-column: span 1; margin-top: 2px;">
                 </div>
                 <button class="btn btn-primary" onclick="addTodo()" style="margin-top: 4px;">등록</button>
             </div>
@@ -631,7 +663,7 @@
     let activeSemester = '3학년 1학기'; 
     let gpaChart, gradRadarChart, gradAreaRadarChart;
     let activeInlineEditIndex = -1; 
-    let activeTodoInlineEditIndex = -1; // 할 일 인라인 편집 상태 추적 변수
+    let activeTodoInlineEditIndex = -1; 
 
     function switchView(viewName) {
         document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
@@ -747,7 +779,6 @@
         updateDashboard();
     }
 
-    /* ─── 2. 할 일 목록 전용 인라인 토글 편집기 기계 ─── */
     function toggleTodoInlineEditPanel(id, event) {
         if(event.target.closest('.et-chk-indicator') || event.target.tagName === 'BUTTON') return;
         activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
@@ -766,7 +797,7 @@
         const todo = todoData.find(t => t.id === id);
         if(todo) {
             todo.text = textVal;
-            todo.start = startVal || deadlineVal; // 시작일 비우면 마감일로 자동 동기화
+            todo.start = startVal || deadlineVal; 
             todo.deadline = deadlineVal;
             todo.location = locVal;
         }
@@ -1168,7 +1199,7 @@
         }
         const engStatus = document.getElementById('englishStatus') ? document.getElementById('englishStatus').value : '미제출';
         const barEnglishTest = document.getElementById('barEnglishTest'); const boardEnglishTest = document.getElementById('boardEnglishTest'); const titleEnglishTest = document.getElementById('titleEnglishTest');
-        if(engStatus === 'open') {
+        if(engStatus === '패스') {
             barEnglishTest.style.width = "100%"; barEnglishTest.className = "status-gauge-fill fill-pass"; boardEnglishTest.innerText = "100% (Pass)"; boardEnglishTest.className = "status-indicator text-pass-color"; titleEnglishTest.className = "mission-title text-pass-color";
         } else {
             barEnglishTest.style.width = "0%"; barEnglishTest.className = "status-gauge-fill fill-fail"; boardEnglishTest.innerText = "0%"; boardEnglishTest.className = "status-indicator text-fail-color"; titleEnglishTest.className = "mission-title text-fail-color";
@@ -1326,7 +1357,6 @@
         changeActiveSemesterTab(activeSemester);
     });
 
-    /* ─── 2. 투두 인라인 편집을 보강한 확장형 렌더링 엔진 ─── */
     function renderTodoList() {
         localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
 
@@ -1355,7 +1385,6 @@
                 metaLineHtml = `<div class="todo-meta-line">${periodText} ${periodText&&locText?'|':''} ${locText}</div>`;
             }
 
-            // 인라인 확장 폼 동적 생성을 위한 아이템 랩핑 구조식 설계
             let innerItemHtml = `
                 <div class="todo-item" onclick="toggleTodoInlineEditPanel(${todo.id}, event)">
                     <div class="todo-left">
@@ -1369,10 +1398,9 @@
                 </div>
             `;
 
-            // 인라인 확장 수정 패널 뷰 바인딩
             if(activeTodoInlineEditIndex === todo.id) {
                 innerItemHtml += `
-                    <div class="todo-inline-edit-box">
+                    <div class="todo-inline-edit-box" id="todoInlineEditBox-${todo.id}">
                         <input type="text" id="inlineTodoText-${todo.id}" value="${todo.text}" placeholder="내용">
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
                             <input type="datetime-local" id="inlineTodoStart-${todo.id}" value="${todo.start||''}">
@@ -1402,6 +1430,16 @@
         if(pastCount === 0) pastContainer.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:20px 0; font-size:0.9rem;">지난 할 일이 없습니다.</li>`;
 
         generateCalendarGrid();
+
+        /* [개선 2번] 뷰 포트에 수정 상자가 렌더링된 것을 확인한 뒤 스크롤을 안정적으로 트래킹하는 로직 */
+        if(activeTodoInlineEditIndex !== -1) {
+            setTimeout(() => {
+                const targetBox = document.getElementById(`todoInlineEditBox-${activeTodoInlineEditIndex}`);
+                if(targetBox) {
+                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 80);
+        }
     }
 
     function generateCalendarGrid() {
@@ -1436,8 +1474,8 @@
             let startIndex = -1; let endIndex = -1;
             for(let i=0; i<42; i++) {
                 const dayStart = new Date(calendarDays[i].date).setHours(0,0,0,0);
-                const dayEnd = new Date(calendarDays[i].date).setHours(23,59,59,999);
-                if(taskStart <= dayEnd && taskEnd >= dayStart) {
+                const dayStartEnd = new Date(calendarDays[i].date).setHours(23,59,59,999);
+                if(taskStart <= dayStartEnd && taskEnd >= dayStart) {
                     if(startIndex === -1) startIndex = i;
                     endIndex = i;
                 }
@@ -1490,17 +1528,21 @@
                     const isEnd = (i === todo._range.end);
                     const isSat = (i % 7 === 6);
 
-                    // ─── 1. 줄이 바뀌어도 중복 표기 없이 완전 최초 기점에만 텍스트 노출 ───
                     const textContent = isStart ? todo.text : '';
 
                     let connClass = 'pill-middle';
                     if(isStart || isSun) connClass = 'pill-start';
                     if(isEnd || isSat) connClass = (connClass === 'pill-start') ? 'pill-start pill-end' : 'pill-end';
 
-                    let colorClass = 'red-pill';
+                    let colorClass = 'color-pill-0';
                     const dlDate = new Date(todo.deadline);
-                    if(dlDate < systemNow) colorClass = 'done-pill';
-                    else if(todo.done) colorClass = 'green-pill';
+                    if(dlDate < systemNow) {
+                        colorClass = 'done-pill';
+                    } else if(todo.done) {
+                        colorClass = 'green-pill';
+                    } else {
+                        colorClass = `color-pill-${todo.id % 5}`;
+                    }
 
                     cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${connClass}">${textContent}</div>`;
                 } else {
