@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <!-- [캐시 방지] 브라우저 강제 제어 메타 태그 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -200,6 +199,7 @@
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; }
         .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
         .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
         .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
@@ -233,9 +233,22 @@
         .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
         .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
 
-        /* ─── 4. 다각형 영역 아랫부분 패딩 하단 여백 추가 ─── */
-        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin: 10px 0 20px 0; padding-bottom: 15px; }
-        .et-radar-box { flex: 1; min-width: 240px; height: 180px; position: relative; }
+        /* 📱 듀얼 그래프 반응형 구조: 세로 정렬 시 겹침 현상 완벽 방지 리팩토링 */
+        .et-dual-charts-container { 
+            display: flex; 
+            row-gap: 35px; /* 모바일에서 위아래 스택 배치 시 텍스트 겹침을 원천 차단하는 세로 여백 */
+            column-gap: 12px; 
+            justify-content: space-around; 
+            flex-wrap: wrap; 
+            margin: 10px 0 20px 0; 
+            padding-bottom: 15px; 
+        }
+        .et-radar-box { 
+            flex: 1; 
+            min-width: 240px; 
+            height: 200px; /* 차트 최외곽 점 라벨이 제목 텍스트를 침범하지 않도록 안정 폭 상향 */
+            position: relative; 
+        }
         .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
 
         .modal-overlay {
@@ -259,7 +272,6 @@
 
 <div class="container">
     
-    <!-- ─── [화면 1] 학점계산기 ─── -->
     <div id="viewCalculator" class="view-content active">
         <div class="et-header">
             <button class="close-btn" style="visibility: hidden;">×</button>
@@ -280,7 +292,6 @@
             </div>
             <div class="et-stat-box">
                 <h3>취득 학점</h3>
-                <!-- 6. ⚙️ 아이콘 완전 제거 -->
                 <p id="etTotalCredits">0<span> / 130</span></p>
             </div>
         </div>
@@ -384,9 +395,7 @@
     </div>
 
 
-    <!-- ─── [화면 2] 졸업사정표 ─── -->
     <div id="viewGraduation" class="view-content">
-        <!-- 1, 2. 상단 헤더 문구 전면 개편 적용 -->
         <div class="grad-header">
             <h1>졸업사정표</h1>
         </div>
@@ -396,7 +405,6 @@
             <p id="gradPercent">0%</p>
         </div>
 
-        <!-- 3. 타이틀 텍스트 '졸업사정표'로 변경 -->
         <div class="card">
             <h2>졸업사정표</h2>
             <div class="et-dual-charts-container">
@@ -409,10 +417,8 @@
                     <canvas id="gradAreaRadarChart"></canvas>
                 </div>
             </div>
-            <div style="font-size:0.8rem; color:var(--et-muted); text-align:center; margin-top:10px;">💡 왼쪽 그래프 터치 시 토익/논문/인권교육 설정을 로드합니다.</div>
-        </div>
+            </div>
 
-        <!-- 5. 상단 지시 헤더 텍스트 변경 반영 -->
         <div class="card">
             <h2>졸업 요건 현황</h2>
             <div class="mission-status">
@@ -443,7 +449,7 @@
         </div>
 
         <div class="card">
-            <h2>영역별 이수 상세 현황</h2>
+            <h2> 영역별 이수 상세 현황</h2>
             <div id="requirementBars"></div>
         </div>
     </div>
@@ -759,7 +765,6 @@
         otherCategories.forEach(cat => { earnedRequirements[cat] = rawEarned[cat]; });
         earnedRequirements['일반선택'] += overflowToGeneral; 
 
-        // 6. 톱니바퀴 없는 깔끔한 텍스트 렌더링 매핑
         document.getElementById('etTotalCredits').innerHTML = `${totalCredits}<span> / 130</span>`;
         document.getElementById('etTotalGpa').innerHTML = totalGpSub > 0 ? (totalGpSum / totalGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
         document.getElementById('etMajorGpa').innerHTML = majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
