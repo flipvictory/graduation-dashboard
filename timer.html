@@ -5,37 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>스터디 타이머</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-border: #e3e3e3;
-            --bg-color: #f8f9fa; --card-bg: #ffffff;
+            --bg-color: #f8f9fa; --card-bg: #ffffff; --et-muted: #64748b;
         }
         body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
         .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); background:#fff; width:100%; box-sizing:border-box; padding:0 16px; }
         .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
         
-        /* 사이드바 UI 추가 */
+        /* 사이드바 UI */
         .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
         .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
         .sidebar.active { left: 0; }
         .sidebar-overlay.active { display: block; }
-        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-border); padding-bottom: 10px; }
         .sidebar-menu { list-style: none; padding: 0; margin: 0; }
         .sidebar-menu li { margin-bottom: 12px; }
         .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
         .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
 
-        .timer-display { font-size: 3.5rem; font-weight: 700; color: var(--et-dark); text-align: center; margin: 40px 0; font-variant-numeric: tabular-nums; }
-        .card { background: var(--card-bg); border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; border:1px solid var(--et-border); }
-        .select-subject { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--et-border); font-size: 1rem; margin-bottom: 20px; outline:none; }
+        .timer-display { font-size: 3.5rem; font-weight: 700; color: var(--et-dark); text-align: center; margin: 20px 0; font-variant-numeric: tabular-nums; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; border:1px solid var(--et-border); box-sizing: border-box;}
+        
+        .select-box, .input-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--et-border); font-size: 1rem; margin-bottom: 15px; outline:none; box-sizing: border-box; }
         .btn-group { display: flex; gap: 10px; justify-content: center; }
         .btn { padding: 12px 28px; border-radius: 30px; font-weight: 700; border: none; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
         .btn-start { background: var(--et-red); color: white; }
         .btn-start:hover { background: #b02313; }
         .btn-stop { background: #64748b; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; font-weight: 500; }
+
         .subject-record-item { display: flex; justify-content: space-between; padding: 12px 6px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+        
+        /* 통계 탭 버튼 */
+        .chart-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
+        .tab-btn { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; font-weight: 500; }
+        .tab-btn.active { background: var(--et-red); color: white; }
     </style>
 </head>
 <body>
@@ -48,6 +57,7 @@
         <li><a href="graduation.html">졸업사정표</a></li>
         <li><a href="schedule.html">할 일 목록</a></li>
         <li><a href="timer.html" class="active">열품타 타이머</a></li>
+        <li><a href="backup.html">설정</a></li>
     </ul>
 </div>
 
@@ -55,21 +65,50 @@
     <div class="et-header">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
         <h1>열품타 스터디 타이머</h1>
-        <button class="close-btn" style="visibility: hidden;">×</button>
+        <button style="visibility: hidden;">×</button>
     </div>
     
     <div style="padding:0 16px; margin-top:20px;">
-        <div class="card">
-            <h3 style="margin-top:0; color:#64748b; font-weight:500; font-size:0.9rem;">오늘 측정중인 과목</h3>
-            <select id="timerSubjectSelect" class="select-subject">
-                <option value="일반공부">자율 개인 공부</option>
-            </select>
+        
+        <div class="card" style="text-align:left;">
+            <h2 style="font-size:1.05rem; margin-top:0; border-left:4px solid var(--et-red); padding-left:10px; margin-bottom:15px;">학습 타이머 설정</h2>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label style="font-size:0.85rem; color:var(--et-muted); font-weight:500; display:block; margin-bottom:5px;">연동할 학기 선택</label>
+                    <select id="semesterSelect" class="select-box" style="margin-bottom:0;" onchange="loadCombinedSubjects()">
+                        <option value="1학년 1학기">1학년 1학기</option>
+                        <option value="1학년 2학기">1학년 2학기</option>
+                        <option value="2학년 1학기">2학년 1학기</option>
+                        <option value="2학년 2학기">2학년 2학기</option>
+                        <option value="3학년 1학기">3학년 1학기</option>
+                        <option value="3학년 2학기">3학년 2학기</option>
+                        <option value="4학년 1학기">4학년 1학기</option>
+                        <option value="4학년 2학기">4학년 2학기</option>
+                    </select>
+                </div>
+                <div style="flex: 1.2; min-width: 180px;">
+                    <label style="font-size:0.85rem; color:var(--et-muted); font-weight:500; display:block; margin-bottom:5px;">자율/개인 과목 추가 (학기 공통)</label>
+                    <div style="display:flex; gap:6px;">
+                        <input type="text" id="newSubjectInput" class="input-box" placeholder="예: 토익공부, 개인 독서" style="margin-bottom:0; flex:1;">
+                        <button class="btn btn-start btn-sm" onclick="addGlobalCustomSubject()" style="border-radius:8px; white-space:nowrap; padding: 0 14px;">추가</button>
+                    </div>
+                </div>
+            </div>
 
-            <div class="timer-display" id="clockDisplay">00:00:00</div>
+            <label style="font-size:0.85rem; color:var(--et-muted); font-weight:500; display:block; margin-bottom:5px;">오늘 측정중인 과목</label>
+            <div style="display: flex; gap: 6px; margin-bottom: 20px;">
+                <select id="timerSubjectSelect" class="select-box" style="margin-bottom:0; flex: 1;">
+                    </select>
+                <button class="btn btn-stop btn-sm" onclick="deleteTargetSubject()" style="border-radius:8px; background-color: #ef4444; color: white; white-space: nowrap; padding: 0 14px;">목록에서 삭제</button>
+            </div>
 
-            <div class="btn-group">
-                <button class="btn btn-start" id="timerControlBtn" onclick="toggleTimerEngine()">공부 시작</button>
-                <button class="btn btn-stop" onclick="resetTimerEngine()">초기화</button>
+            <div style="text-align: center; border-top: 1px dashed var(--et-border); padding-top: 15px;">
+                <div class="timer-display" id="clockDisplay">00:00:00</div>
+                <div class="btn-group">
+                    <button class="btn btn-start" id="timerControlBtn" onclick="toggleTimerEngine()">공부 시작</button>
+                    <button class="btn btn-stop" onclick="resetTimerEngine()">초기화</button>
+                </div>
             </div>
         </div>
 
@@ -77,6 +116,18 @@
             <h2 style="font-size:1.05rem; margin-top:0; border-left:4px solid var(--et-red); padding-left:10px;">오늘의 과목별 공부 기록</h2>
             <div id="todayRecordContainer"></div>
         </div>
+
+        <div class="card" style="text-align:left;">
+            <h2 style="font-size:1.05rem; margin-top:0; border-left:4px solid var(--et-red); padding-left:10px; margin-bottom:15px;">학습 통계</h2>
+            <div class="chart-tabs">
+                <button class="tab-btn active" id="tab7" onclick="switchChartRange(7)">1주일</button>
+                <button class="tab-btn" id="tab30" onclick="switchChartRange(30)">1개월</button>
+            </div>
+            <div style="position: relative; width: 100%; height: 250px;">
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -89,28 +140,119 @@
     let timerInterval = null;
     let elapsedSeconds = 0;
     let isTimerRunning = false;
-    let trackingRecords = JSON.parse(localStorage.getItem('studyTimerRecords')) || {};
+    
+    // 로컬 스토리지 데이터 로드 및 초기화
+    let trackingRecords = JSON.parse(localStorage.getItem('studyTimerRecordsDaily')) || {};
+    let globalCustomSubjects = JSON.parse(localStorage.getItem('globalTimerSubjects')) || ["자율 개인 공부"];
 
-    function loadSubjectsFromGpa() {
-        const subjectData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [];
-        const selectElement = document.getElementById('timerSubjectSelect');
+    let myChart = null;
+    let activeChartRange = 7;
+
+    function getTodayDateString() {
+        const d = new Date();
+        const offset = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() - offset).toISOString().split('T')[0];
+    }
+
+    window.onload = function() {
+        const savedSem = localStorage.getItem('currentSemester') || "3학년 1학기";
+        document.getElementById('semesterSelect').value = savedSem;
         
-        // 고유 과목 필터링 및 옵션 동적 동기화 삽입
-        const uniqueNames = [...new Set(subjectData.map(s => s.name))];
-        uniqueNames.forEach(name => {
+        loadCombinedSubjects();
+        renderRecordsTimeline();
+        updateChart();
+    }
+
+    // 학기 연동 데이터(gpa.html) 및 공통 과목 통합 로드 함수
+    function loadCombinedSubjects() {
+        if(isTimerRunning) {
+            alert('타이머가 작동 중일 때는 학기를 변경할 수 없습니다.');
+            document.getElementById('semesterSelect').value = localStorage.getItem('currentSemester');
+            return;
+        }
+
+        const currentSemester = document.getElementById('semesterSelect').value;
+        localStorage.setItem('currentSemester', currentSemester);
+
+        // 1. gpa.html에 보관된 'subjectDataGrad' 배열 연동 및 데이터 필터링
+        const gpaData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [];
+        const gpaSubjects = gpaData
+            .filter(s => s.semester === currentSemester)
+            .map(s => s.name);
+
+        // 2. 학기 무관 공통 자율 과목 가져오기
+        const globalSubjects = globalCustomSubjects;
+
+        // 3. GPA 연동 과목 + 공통 자율 과목 병합 (중복 제거)
+        let combined = [...new Set([...gpaSubjects, ...globalSubjects])];
+
+        if (combined.length === 0) {
+            combined.push("자율 개인 공부");
+        }
+
+        // 4. '오늘 측정중인 과목' 선택창에 옵션 주입
+        const selectElement = document.getElementById('timerSubjectSelect');
+        selectElement.innerHTML = '';
+        combined.forEach(name => {
             const opt = document.createElement('option');
             opt.value = name; opt.innerText = name;
             selectElement.appendChild(opt);
         });
     }
 
+    // 자율/개인 과목 추가 (학기 무관 상시 노출)
+    function addGlobalCustomSubject() {
+        const input = document.getElementById('newSubjectInput');
+        const name = input.value.trim();
+        if(!name) return alert('과목명을 입력해주세요.');
+
+        const selectElement = document.getElementById('timerSubjectSelect');
+        const existingOptions = Array.from(selectElement.options).map(opt => opt.value);
+        
+        if (existingOptions.includes(name)) {
+            return alert('이미 목록에 존재하는 과목명입니다.');
+        }
+
+        if (!globalCustomSubjects.includes(name)) {
+            globalCustomSubjects.push(name);
+            localStorage.setItem('globalTimerSubjects', JSON.stringify(globalCustomSubjects));
+        }
+
+        loadCombinedSubjects();
+        selectElement.value = name; 
+        input.value = '';
+    }
+
+    // 과목 제거 검증 제어 모듈
+    function deleteTargetSubject() {
+        const selectElement = document.getElementById('timerSubjectSelect');
+        const name = selectElement.value;
+        if(!name) return alert('삭제할 과목이 없습니다.');
+        if(isTimerRunning) return alert('타이머가 작동 중일 때는 과목을 삭제할 수 없습니다.');
+
+        // 🚨 핵심 수정: 사용자가 직접 추가한 글로벌 자율 과목 리스트에 없는 경우(= gpa.html 연동 과목) 차단
+        if (!globalCustomSubjects.includes(name)) {
+            return alert('GPA 학점계산기 연동 과목은 타이머 목록에서 삭제할 수 없습니다.');
+        }
+
+        if(confirm(`[${name}] 자율 과목을 목록에서 삭제하시겠습니까?\n(기존에 누적된 공부 기록 통계는 안전하게 유지됩니다.)`)) {
+            globalCustomSubjects = globalCustomSubjects.filter(s => s !== name);
+            localStorage.setItem('globalTimerSubjects', JSON.stringify(globalCustomSubjects));
+            loadCombinedSubjects();
+        }
+    }
+
+    // 타이머 엔진 제어 파트
     function toggleTimerEngine() {
         const btn = document.getElementById('timerControlBtn');
         const select = document.getElementById('timerSubjectSelect');
+        const semSelect = document.getElementById('semesterSelect');
 
         if(!isTimerRunning) {
+            if(!select.value) return alert('선택된 과목이 없습니다.');
             isTimerRunning = true;
             select.disabled = true;
+            semSelect.disabled = true;
             btn.innerText = "일시 정지";
             btn.style.background = "#64748b";
             timerInterval = setInterval(() => {
@@ -120,6 +262,7 @@
         } else {
             isTimerRunning = false;
             select.disabled = false;
+            semSelect.disabled = false;
             btn.innerText = "공부 시작";
             btn.style.background = "var(--et-red)";
             clearInterval(timerInterval);
@@ -128,12 +271,19 @@
     }
 
     function saveCurrentTimeRecord() {
+        const today = getTodayDateString();
         const targetSubject = document.getElementById('timerSubjectSelect').value;
-        trackingRecords[targetSubject] = (trackingRecords[targetSubject] || 0) + elapsedSeconds;
-        localStorage.setItem('studyTimerRecords', JSON.stringify(trackingRecords));
+        
+        if(!trackingRecords[today]) trackingRecords[today] = {};
+        
+        trackingRecords[today][targetSubject] = (trackingRecords[today][targetSubject] || 0) + elapsedSeconds;
+        localStorage.setItem('studyTimerRecordsDaily', JSON.stringify(trackingRecords));
+        
         elapsedSeconds = 0;
         document.getElementById('clockDisplay').innerText = "00:00:00";
+        
         renderRecordsTimeline();
+        updateChart();
     }
 
     function resetTimerEngine() {
@@ -142,6 +292,7 @@
             elapsedSeconds = 0;
             isTimerRunning = false;
             document.getElementById('timerSubjectSelect').disabled = false;
+            document.getElementById('semesterSelect').disabled = false;
             document.getElementById('clockDisplay').innerText = "00:00:00";
             document.getElementById('timerControlBtn').innerText = "공부 시작";
             document.getElementById('timerControlBtn').style.background = "var(--et-red)";
@@ -156,23 +307,75 @@
     function renderRecordsTimeline() {
         const container = document.getElementById('todayRecordContainer');
         container.innerHTML = '';
-        if(Object.keys(trackingRecords).length === 0) {
+        const today = getTodayDateString();
+        const todayData = trackingRecords[today] || {};
+
+        if(Object.keys(todayData).length === 0) {
             container.innerHTML = `<div style="color:var(--et-muted); text-align:center; padding:15px 0;">오늘 측정된 누적 통계 기록이 존재하지 않습니다.</div>`;
             return;
         }
-        Object.keys(trackingRecords).forEach(sub => {
+        Object.keys(todayData).forEach(sub => {
             container.innerHTML += `
                 <div class="subject-record-item">
                     <strong>📘 ${sub}</strong>
-                    <span>${formatTimeSpan(trackingRecords[sub])}</span>
+                    <span>${formatTimeSpan(todayData[sub])}</span>
                 </div>
             `;
         });
     }
 
-    window.onload = function() {
-        loadSubjectsFromGpa();
-        renderRecordsTimeline();
+    function switchChartRange(range) {
+        activeChartRange = range;
+        document.getElementById('tab7').classList.toggle('active', range === 7);
+        document.getElementById('tab30').classList.toggle('active', range === 30);
+        updateChart();
+    }
+
+    function updateChart() {
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        const labels = [];
+        const dataValues = [];
+
+        for (let i = activeChartRange - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            
+            const offset = d.getTimezoneOffset() * 60000;
+            const dateStr = new Date(d.getTime() - offset).toISOString().split('T')[0];
+            labels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+
+            let totalSecondsOfDay = 0;
+            if (trackingRecords[dateStr]) {
+                Object.values(trackingRecords[dateStr]).forEach(sec => { totalSecondsOfDay += sec; });
+            }
+            dataValues.push(parseFloat((totalSecondsOfDay / 60).toFixed(1)));
+        }
+
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '총 공부 시간 (분)',
+                    data: dataValues,
+                    backgroundColor: 'rgba(198, 41, 23, 0.6)',
+                    borderColor: 'rgba(198, 41, 23, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: '단위 (분)', font: { size: 10 } } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
     }
 </script>
 </body>

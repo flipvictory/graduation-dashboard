@@ -290,18 +290,6 @@
             justify-content: space-between;
         }
         .urgent-todo-item:last-child { border-bottom: none; }
-        
-        /* 백업 / 복구 */
-        .backup-restore-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px dashed var(--et-border);
-        }
-        .btn-backup { background-color: var(--et-dark); color: #fff; }
-        .btn-restore { background-color: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
     </style>
 </head>
 <body>
@@ -314,6 +302,7 @@
         <li><a href="graduation.html">졸업사정표</a></li>
         <li><a href="schedule.html" class="active">할 일 목록</a></li>
         <li><a href="timer.html">타이머</a></li>
+        <li><a href="backup.html">설정</a></li>
     </ul>
 </div>
 
@@ -369,12 +358,6 @@
         <div class="todo-list-section-title" style="color:var(--et-muted);">지난 할 일</div>
         <div class="todo-scroll-viewport">
             <ul class="todo-list" id="todoPastListContainer"></ul>
-        </div>
-
-        <div class="backup-restore-group">
-            <button class="btn btn-backup" onclick="exportAppDataToFile()">데이터 백업</button>
-            <button class="btn btn-restore" onclick="document.getElementById('etDataFileInput').click()">데이터 복구</button>
-            <input type="file" id="etDataFileInput" style="display:none;" accept=".txt" onchange="importAppDataFromFile(event)">
         </div>
     </div>
 </div>
@@ -717,52 +700,6 @@
             activeTodoInlineEditIndex = -1;
             renderTodoList();
         }
-    }
-
-    function exportAppDataToFile() {
-        const backupObject = {
-            todoDataGrad: todoData
-        };
-        
-        const dataStr = JSON.stringify(backupObject, null, 4);
-        const dataBlob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' });
-        const downloadLink = document.createElement('a');
-        
-        const now = new Date();
-        const dateStamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2);
-        
-        downloadLink.download = `할일목록_백업데이터_${dateStamp}.txt`;
-        downloadLink.href = URL.createObjectURL(dataBlob);
-        downloadLink.click();
-        URL.revokeObjectURL(downloadLink.href);
-    }
-
-    function importAppDataFromFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result);
-                
-                if (importedData.todoDataGrad) {
-                    if (confirm('파일 데이터를 읽어왔습니다. 기존 등록 정보를 지우고 백업 데이터로 교체하시겠습니까?')) {
-                        todoData = importedData.todoDataGrad;
-                        localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
-                        
-                        alert('데이터 복구가 성공적으로 완료되었습니다.');
-                        location.reload(); 
-                    }
-                } else {
-                    alert('유효한 백업 파일 형식이 아닙니다.');
-                }
-            } catch (err) {
-                alert('파일을 파싱하는 도중 오류가 발생했습니다. 올바른 텍스트 파일을 지정해 주세요.');
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = ''; 
     }
 
     renderTodoList();

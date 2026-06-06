@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>설정</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
+            --et-light-gray: #f2f2f2; --et-border: #e3e3e3; --bg-color: #ffffff; --card-bg: #ffffff; --danger-color: #ef4444;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--et-dark); margin: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(30px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+            display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;
+        }
+        html { -webkit-text-size-adjust: 100%; }
+        button { touch-action: manipulation; font-size: 16px; font-family: inherit; }
+        .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
+        .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); margin-bottom: 20px; }
+        .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+        
+        .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
+        .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 12px; }
+        .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
+
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
+        .descr { font-size: 0.88rem; color: #555; line-height: 1.5; margin-bottom: 20px; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: 700; border: none; cursor: pointer; font-size: 0.95rem; transition: background 0.2s; box-sizing: border-box; text-align: center; display: block; margin-bottom: 10px; }
+        .btn-primary { background: var(--et-red); color: white; }
+        .btn-primary:hover { background: #b02313; }
+        .btn-secondary { background: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
+        .btn-secondary:hover { background: #e5e5e5; }
+        .btn-danger { background: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
+        .btn-danger:hover { background: #fff5f5; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">메뉴 선택</div>
+    <ul class="sidebar-menu">
+        <li><a href="gpa.html">학점계산기</a></li>
+        <li><a href="graduation.html">졸업사정표</a></li>
+        <li><a href="schedule.html">할 일 목록</a></li>
+        <li><a href="timer.html">열품타 타이머</a></li>
+        <li><a href="backup.html" class="active">설정</a></li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="et-header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>설정</h1>
+        <button style="visibility: hidden;">×</button>
+    </div>
+
+    <div class="card">
+        <h2>전체 데이터 백업</h2>
+        <div class="descr">
+            현재 브라우저에 저장된 <strong>학점 계산기 과목정보, 졸업 인증 요건 설정, 등록된 모든 할 일, 과목별 공부시간 기록</strong> 전체를 하나의 텍스트(.txt) 파일로 결합하여 PC나 스마트폰에 안전하게 내려받습니다.
+        </div>
+        <button class="btn btn-primary" onclick="exportAllAppData()">통합 백업 파일 다운로드</button>
+    </div>
+
+    <div class="card">
+        <h2>전체 데이터 복구</h2>
+        <div class="descr">
+            이전에 보관해둔 텍스트 백업 파일을 업로드하여, 기기 변경이나 데이터 유실 시 모든 기록을 한 번에 원상복구합니다. 복구 진행 시 기존 데이터는 백업 데이터로 완전 교체됩니다.
+        </div>
+        <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()">백업 파일 선택 및 복구</button>
+        <input type="file" id="importFileInput" style="display:none;" accept=".txt" onchange="importAllAppData(event)">
+    </div>
+
+    <div class="card">
+        <h2>전체 데이터 초기화</h2>
+        <div class="descr" style="color: var(--danger-color);">
+            주의: 실행 시 저장된 모든 기록(학점, 할일, 타이머 등)이 브라우저 캐시에서 영구적으로 삭제되며 완전히 빈 초기 상태로 되돌아갑니다.
+        </div>
+        <button class="btn btn-danger" onclick="clearAllAppData()">전체 데이터 초기화</button>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    // 서비스 전체 통합 스토리지 키 구조화 매핑 배열
+    const APP_STORAGE_KEYS = [
+        'subjectDataGrad',
+        'extraGradDataV2',
+        'todoDataGrad',
+        'studyTimerRecordsDaily',
+        'globalTimerSubjects',
+        'currentSemester'
+    ];
+
+    function exportAllAppData() {
+        const backupPackage = {};
+        let hasData = false;
+        APP_STORAGE_KEYS.forEach(key => {
+            const val = localStorage.getItem(key);
+            if (val !== null) {
+                backupPackage[key] = val;
+                hasData = true;
+            }
+        });
+        const jsonStr = JSON.stringify(backupPackage, null, 4);
+        const blob = new Blob([jsonStr], { type: 'text/plain;charset=utf-8' });
+        const downloadLink = document.createElement('a');
+        const now = new Date();
+        const dateStamp = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
+        downloadLink.download = `대학생활통합매니저_통합백업_${dateStamp}.txt`;
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.click();
+        URL.revokeObjectURL(downloadLink.href);
+    }
+
+    function importAllAppData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedJson = JSON.parse(e.target.result);
+                const validKeys = Object.keys(importedJson).filter(k => APP_STORAGE_KEYS.includes(k));
+                if (validKeys.length === 0) return alert('올바른 백업 파일 형식이 아닙니다.');
+                if (confirm('⚠️ 정말로 모든 데이터를 복구하시겠습니까?\n현재 브라우저 내 등록되어 있는 기록들이 백업 내용으로 덮어씌워집니다.')) {
+                    APP_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+                    validKeys.forEach(key => localStorage.setItem(key, importedJson[key]));
+                    alert('🎉 학점, 졸업, 할 일, 타이머 통합 데이터 복구가 완료되었습니다!');
+                    location.reload();
+                }
+            } catch (err) {
+                alert('파일 파싱 중 오류가 발생했습니다. 정상적인 백업 텍스트 파일인지 확인해 주세요.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    }
+
+    function clearAllAppData() {
+        if (confirm('🚨 [경고] 정말로 모든 데이터를 영구 삭제하시겠습니까?\n이 작업은 복구가 불가능하며 백업센터를 통해 저장해둔 파일이 없다면 되돌릴 수 없습니다.')) {
+            APP_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+            alert('모든 통합 데이터 세션이 안전하게 초기화되었습니다.');
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>
