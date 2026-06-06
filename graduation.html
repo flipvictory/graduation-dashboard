@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>졸업사정표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
+            --et-border: #e3e3e3; --secondary-color: #0ea5e9; --bg-color: #ffffff; --card-bg: #ffffff;
+        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0 0 30px 0; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
+        .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); margin-bottom: 20px; }
+        .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+        
+        /* 사이드바 UI 추가 */
+        .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
+        .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 12px; }
+        .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
+
+        .summary-box-grad { background: var(--et-red); color: #fff; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
+        .summary-box-grad h3 { font-size: 0.82rem; margin: 0 0 4px 0; opacity: 0.9; font-weight: 400; }
+        .summary-box-grad p { font-size: 1.8rem; font-weight: 700; margin: 0; }
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
+        .et-dual-charts-container { display: flex; gap: 12px; justify-content: space-around; flex-wrap: wrap; margin-bottom: 15px; }
+        .et-radar-box { flex: 1; min-width: 240px; height: 200px; position: relative; text-align: center; }
+        .et-radar-title { font-size: 0.8rem; font-weight: bold; color: #555; margin-bottom: 6px; }
+        .mission-status { position: relative; display: flex; align-items: center; justify-content: space-between; background-color: #fdfdfd; padding: 12px 18px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--et-border); overflow: hidden; }
+        .mission-title, .status-indicator { position: relative; z-index: 10; font-weight: 700; font-size: 0.88rem; }
+        .text-fail-color { color: #555; } .text-pass-color { color: var(--et-red); }
+        .status-gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0%; z-index: 1; transition: width 0.5s ease; }
+        .fill-fail { background-color: #fbf1f0; } .fill-pass { background-color: #fde8e6; border-right: 2px solid var(--et-red); }
+        .grad-requirement-item { margin-bottom: 14px; }
+        .grad-labels { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; font-weight: 500; }
+        .progress-bar-bg { background-color: #f2f2f2; border-radius: 4px; height: 8px; width: 100%; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; }
+        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background-color: white; padding: 24px; border-radius: 20px; max-width: 450px; width: 85%; }
+        .btn-close { background-color: #64748b; color: white; width: 100%; margin-top: 15px; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">메뉴 선택</div>
+    <ul class="sidebar-menu">
+        <li><a href="gpa.html">학점계산기</a></li>
+        <li><a href="graduation.html" class="active">졸업사정표</a></li>
+        <li><a href="schedule.html">할 일 목록</a></li>
+        <li><a href="timer.html">열품타 타이머</a></li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="et-header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>졸업사정표</h1>
+        <button class="close-btn" style="visibility: hidden;">×</button>
+    </div>
+
+    <div class="summary-box-grad">
+        <h3>교과 요건 총 달성도</h3>
+        <p id="gradPercent">0%</p>
+    </div>
+
+    <div class="card">
+        <h2>졸업 분석 그래프</h2>
+        <div class="et-dual-charts-container">
+            <div class="et-radar-box" onclick="openModal()" style="cursor: pointer;">
+                <div class="et-radar-title">비교과 요건 설정 (클릭)</div>
+                <canvas id="gradRadarChart"></canvas>
+            </div>
+            <div class="et-radar-box">
+                <div class="et-radar-title">교과 영역별 이수율</div>
+                <canvas id="gradAreaRadarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>졸업 요건 현황</h2>
+        <div class="mission-status">
+            <div id="barSeminar" class="status-gauge-fill"></div> 
+            <span id="titleSeminar" class="mission-title text-fail-color">학부세미나</span>
+            <span id="boardSeminar" class="status-indicator text-fail-color">0%</span>
+        </div>
+        <div class="mission-status">
+            <div id="barGender" class="status-gauge-fill"></div>
+            <span id="titleGender" class="mission-title text-fail-color">인권과 성평등 교육</span>
+            <span id="boardGender" class="status-indicator text-fail-color">0%</span>
+        </div>
+        <div class="mission-status">
+            <div id="barEnglish" class="status-gauge-fill"></div>
+            <span id="titleEnglish" class="mission-title text-fail-color">영어/외국어 강의 이수</span>
+            <span id="boardEnglishCount" class="status-indicator text-fail-color">0%</span>
+        </div>
+        <div class="mission-status">
+            <div id="barEnglishTest" class="status-gauge-fill"></div>
+            <span id="titleEnglishTest" class="mission-title text-fail-color">공인영어성적 제출</span>
+            <span id="boardEnglishTest" class="status-indicator text-fail-color">0%</span>
+        </div>
+        <div class="mission-status">
+            <div id="barThesis" class="status-gauge-fill"></div>
+            <span id="titleThesis" class="mission-title text-fail-color">졸업논문 제출</span>
+            <span id="boardThesis" class="status-indicator text-fail-color">0%</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>영역별 이수 상세 현황</h2>
+        <div id="requirementBars"></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="gradModal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content">
+        <h3>📋 비교과 설정</h3>
+        <div class="form-group">
+            <label>1. 공인영어성적 현황</label>
+            <select id="englishStatus" onchange="saveExtraRequirements()">
+                <option value="미제출">❌ 미제출</option>
+                <option value="패스">✅ 인증완료</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label>2. 졸업논문 제출 현황</label>
+            <select id="thesisStatus" onchange="saveExtraRequirements()">
+                <option value="미제출">❌ 미제출</option>
+                <option value="패스">✅ 합격</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-top:15px;">
+            <label>3. 인권 교육 이수 횟수 (4회 필수)</label>
+            <select id="genderEduCount" onchange="saveExtraRequirements()">
+                <option value="0">0회</option> <option value="1">1회</option>
+                <option value="2">2회</option> <option value="3">3회</option>
+                <option value="4">4회 완료</option>
+            </select>
+        </div>
+        <button class="btn-close" onclick="closeModal()">창 닫기 및 적용</button>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+    function openModal() { document.getElementById('gradModal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('gradModal').style.display = 'none'; updateGradDashboard(); }
+    function closeModalOnOverlay(e) { if(e.target.id === 'gradModal') closeModal(); }
+
+    const gradRequirements = { '공통교양': 13, '핵심교양': 6, '선택교양': 25, '전공필수': 31, '전공선택': 32, '심화필수': 9, '일반선택': 14 };
+    let gradRadarChart, gradAreaRadarChart;
+
+    function saveExtraRequirements() {
+        const extraData = {
+            englishStatus: document.getElementById('englishStatus').value,
+            thesisStatus: document.getElementById('thesisStatus').value,
+            genderEduCount: document.getElementById('genderEduCount').value
+        };
+        localStorage.setItem('extraGradDataV2', JSON.stringify(extraData));
+    }
+
+    function loadExtraRequirements() {
+        const extraData = JSON.parse(localStorage.getItem('extraGradDataV2'));
+        if (extraData) {
+            document.getElementById('englishStatus').value = extraData.englishStatus || '미제출';
+            document.getElementById('thesisStatus').value = extraData.thesisStatus || '미제출';
+            document.getElementById('genderEduCount').value = extraData.genderEduCount || '0';
+        }
+    }
+
+    function updateGradDashboard() {
+        let subjectData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [];
+        let totalCredits = 0;
+        let rawEarned = { '공통교양': 0, '핵심교양': 0, '선택교양': 0, '전공필수': 0, '전공선택': 0, '심화필수': 0, '일반선택': 0 };
+        let earnedRequirements = { '공통교양': 0, '핵심교양': 0, '선택교양': 0, '전공필수': 0, '전공선택': 0, '심화필수': 0, '일반선택': 0 };
+        let hasSeminar = false; let approvedEnglishCount = 0;
+
+        subjectData.forEach(item => {
+            if (item.grade === 'F' || item.grade === 'NP' || item.isReplaced) return;
+            let credits = Number(item.credits);
+            totalCredits += credits;
+            if (rawEarned[item.courseType] !== undefined) rawEarned[item.courseType] += credits;
+            if (item.name.replace(/ /g, '').includes('학부세미나')) hasSeminar = true;
+            if (item.isEnglish === '영어') approvedEnglishCount++;
+        });
+
+        let overflowToGeneral = 0;
+        ['공통교양', '핵심교양', '선택교양'].forEach(cat => {
+            let limit = gradRequirements[cat];
+            if(rawEarned[cat] > limit) { earnedRequirements[cat] = limit; overflowToGeneral += (rawEarned[cat] - limit); }
+            else { earnedRequirements[cat] = rawEarned[cat]; }
+        });
+        ['전공필수', '전공선택', '심화필수', '일반선택'].forEach(cat => { earnedRequirements[cat] = rawEarned[cat]; });
+        earnedRequirements['일반선택'] += overflowToGeneral;
+
+        document.getElementById('gradPercent').innerText = `${Math.min(100, Math.round((totalCredits / 130) * 100))}%`;
+
+        // 요건 UI 바인딩
+        bindStatus('Seminar', hasSeminar ? 100 : 0, hasSeminar ? '100% (Pass)' : '0%');
+        let genderCount = parseInt(document.getElementById('genderEduCount').value);
+        bindStatus('Gender', Math.round((genderCount / 4) * 100), genderCount === 4 ? '100% (Pass)' : `${genderCount}/4회`);
+        bindStatus('English', Math.min(100, Math.round((approvedEnglishCount / 5) * 100)), approvedEnglishCount >= 5 ? '100% (Pass)' : `${approvedEnglishCount}/5강의`);
+        let engStatus = document.getElementById('englishStatus').value;
+        bindStatus('EnglishTest', engStatus === '패스' ? 100 : 0, engStatus === '패스' ? 'Pass' : '미제출');
+        let thesisStatus = document.getElementById('thesisStatus').value;
+        bindStatus('Thesis', thesisStatus === '패스' ? 100 : 0, thesisStatus === '패스' ? 'Pass' : '미제출');
+
+        const barContainer = document.getElementById('requirementBars'); barContainer.innerHTML = '';
+        let areaRadarDataset = [];
+        Object.keys(gradRequirements).forEach(key => {
+            let req = gradRequirements[key]; let earned = earnedRequirements[key]; let pct = Math.min(100, Math.round((earned / req) * 100));
+            areaRadarDataset.push(pct);
+            barContainer.innerHTML += `<div class="grad-requirement-item"><div class="grad-labels"><span>${key}</span><span>${earned} / ${req} 학점 (${pct}%)</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width: ${pct}%; background-color: var(--et-red)"></div></div></div>`;
+        });
+
+        renderRadarCharts(hasSeminar, Math.round((genderCount / 4) * 100), Math.min(100, Math.round((approvedEnglishCount / 5) * 100)), engStatus, thesisStatus, areaRadarDataset);
+    }
+
+    function bindStatus(id, pct, text) {
+        const bar = document.getElementById(`bar${id}`);
+        const board = document.getElementById(`board${id}`) || document.getElementById(`boardEnglishCount`);
+        const title = document.getElementById(`title${id}`);
+        bar.style.width = `${pct}%`;
+        if(pct === 100) { bar.className = "status-gauge-fill fill-pass"; board.className = "status-indicator text-pass-color"; title.className = "mission-title text-pass-color"; board.innerText = text; }
+        else { bar.className = "status-gauge-fill fill-fail"; board.className = "status-indicator text-fail-color"; title.className = "mission-title text-fail-color"; board.innerText = text; }
+    }
+
+    function renderRadarCharts(hasSeminar, genderPct, engPct, engStatus, thesisStatus, areaRadarDataset) {
+        const ctxGrad = document.getElementById('gradRadarChart').getContext('2d');
+        if (gradRadarChart) gradRadarChart.destroy();
+        gradRadarChart = new Chart(ctxGrad, {
+            type: 'radar',
+            data: { labels: ['세미나', '인권', '영강', '토익', '논문'], datasets: [{ data: [hasSeminar ? 100 : 0, genderPct, engPct, engStatus === '패스' ? 100 : 0, thesisStatus === '패스' ? 100 : 0], backgroundColor: 'rgba(198, 41, 23, 0.12)', borderColor: 'var(--et-red)', borderWidth: 1.5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } } }
+        });
+
+        const ctxAreaGrad = document.getElementById('gradAreaRadarChart').getContext('2d');
+        if (gradAreaRadarChart) gradAreaRadarChart.destroy();
+        gradAreaRadarChart = new Chart(ctxAreaGrad, {
+            type: 'radar',
+            data: { labels: ['공교', '핵교', '선교', '전필', '전선', '심필', '일선'], datasets: [{ data: areaRadarDataset, backgroundColor: 'rgba(14, 165, 233, 0.12)', borderColor: '#0ea5e9', borderWidth: 1.5 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false } } } }
+        });
+    }
+
+    window.onload = function() { loadExtraRequirements(); updateGradDashboard(); }
+</script>
+</body>
+</html>

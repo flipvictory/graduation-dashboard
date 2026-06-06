@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>학점계산기</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
+            --et-light-gray: #f2f2f2; --et-border: #e3e3e3; --primary-color: #4f46e5; --secondary-color: #0ea5e9;
+            --success-color: #10b981; --bg-color: #ffffff; --card-bg: #ffffff; --danger-color: #ef4444; accent-color: #c62917;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--et-dark); margin: 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(30px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+            display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;
+        }
+        html { -webkit-text-size-adjust: 100%; }
+        input, select, button { font-size: 16px; font-family: inherit; }
+        button { touch-action: manipulation; }
+        .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
+        .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); margin-bottom: 5px; }
+        .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+        .close-btn { font-size: 1.4rem; color: #000; cursor: pointer; background: none; border: none; padding: 0 10px; font-weight: 300; }
+        
+        /* 사이드바 UI 추가 */
+        .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
+        .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 12px; }
+        .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
+
+        .et-tabs-wrapper { overflow-x: auto; white-space: nowrap; border-bottom: 1px solid var(--et-border); margin-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        .et-tabs-wrapper::-webkit-scrollbar { display: none; }
+        .et-tab { display: inline-block; padding: 14px 12px; font-size: 0.9rem; color: var(--et-muted); cursor: pointer; font-weight: 500; position: relative; }
+        .et-tab.active { color: #000000; font-weight: 700; }
+        .et-tab.active::after { content: ''; position: absolute; bottom: 0; left: 12px; right: 12px; height: 2px; background-color: #000000; }
+        .et-summary-board { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-bottom: 20px; padding: 10px 0; }
+        .et-stat-box h3 { font-size: 0.8rem; color: #737373; font-weight: 400; margin: 0 0 6px 0; }
+        .et-stat-box p { font-size: 1.65rem; font-weight: 700; color: var(--et-red); margin: 0; }
+        .et-stat-box p span { font-size: 0.85rem; color: var(--et-muted); font-weight: 400; }
+        .et-chart-legend { display: flex; justify-content: flex-end; gap: 12px; font-size: 0.78rem; color: var(--et-muted); margin-bottom: 6px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .legend-dot.total { background-color: var(--et-red); }
+        .legend-dot.major { background-color: var(--et-muted); }
+        .et-chart-container { position: relative; height: 160px; width: 100%; margin-bottom: 25px; }
+        .et-dist-container { margin-bottom: 30px; padding: 0 4px; }
+        .et-dist-row { display: flex; align-items: center; margin-bottom: 8px; font-size: 0.85rem; }
+        .et-dist-label { width: 35px; font-weight: bold; color: #555; }
+        .et-dist-bar-bg { flex: 1; background-color: #f3f3f3; height: 6px; border-radius: 3px; overflow: hidden; margin: 0 10px; }
+        .et-dist-bar-fill { height: 100%; border-radius: 3px; }
+        .et-dist-pct { width: 35px; text-align: right; color: #999; font-size: 0.8rem; }
+        .et-sem-detail-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; padding-bottom: 4px; }
+        .et-sem-title-group { display: flex; flex-direction: column; gap: 2px; }
+        .et-sem-title { font-size: 1.35rem; font-weight: 700; color: #000; }
+        .et-sem-stats { font-size: 0.88rem; color: #737373; }
+        .et-sem-stats span { color: var(--et-red); font-weight: 500; }
+        .et-btn-timetable { background-color: var(--et-red); color: #ffffff; border: none; border-radius: 20px; padding: 8px 14px; font-size: 0.82rem; font-weight: bold; cursor: pointer; }
+        .et-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+        .et-table th { font-size: 0.82rem; color: var(--et-muted); font-weight: 400; padding: 8px 4px; border-bottom: 1px solid var(--et-border); }
+        .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; }
+        .draggable-tr { transition: transform 0.22s cubic-bezier(0.2, 0, 0.2, 1), background-color 0.2s; user-select: none; -webkit-user-select: none; }
+        .draggable-tr.dragging { opacity: 0.75; background-color: var(--et-red-light) !important; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.12); cursor: move; }
+        .et-col-name { padding-left: 6px !important; }
+        .course-title-wrapper { display: flex; align-items: center; max-width: 100%; overflow: hidden; flex-wrap: wrap; gap: 4px; }
+        .course-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; font-weight: 500; color: #000; }
+        .course-labels-wrapper { display: flex; gap: 3px; flex-shrink: 0; align-items: center; }
+        .badge { font-size: 0.68rem; font-weight: 700; padding: 2px 5px; border-radius: 4px; white-space: nowrap; display: inline-block; line-height: 1.2; letter-spacing: -0.02em; }
+        .badge-replaced { background-color: #ffebee; color: #c62917; border: 1px solid rgba(198, 41, 23, 0.15); }
+        .badge-retake { background-color: #fff3e0; color: #e65100; border: 1px solid rgba(230, 81, 0, 0.15); }
+        .badge-eng { background-color: #e8eaf6; color: #3f51b5; border: 1px solid rgba(63, 81, 181, 0.15); }
+        .et-col-center { text-align: center; color: #444; }
+        .et-col-grade { cursor: pointer; position: relative; }
+        .inline-grade-picker { position: absolute; z-index: 100; background: white; border: 1px solid var(--et-border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 180px; overflow-y: auto; right: 5%; top: 80%; width: 65px; text-align: center; }
+        .picker-item { padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f2f2f2; cursor: pointer; font-weight: bold; color: #333; }
+        .picker-item:hover { background-color: var(--et-red-light); color: var(--et-red); }
+        .et-chk-indicator { width: 18px; height: 18px; border: 1px solid var(--et-border); border-radius: 4px; display: inline-block; vertical-align: middle; position: relative; cursor: pointer; transition: all 0.15s; }
+        .et-chk-indicator.checked { background-color: var(--et-red); border-color: var(--et-red); }
+        .et-chk-indicator.checked::after { content: '✓'; color: #fff; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .inline-edit-row { background-color: #fafafa !important; }
+        .inline-edit-box { display: flex; flex-direction: column; gap: 8px; padding: 6px 4px; }
+        .inline-edit-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+        .inline-edit-inputs input { grid-column: span 2; padding: 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; box-sizing: border-box; width: 100%; }
+        .inline-edit-inputs select { padding: 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; background: #fff; width: 100%; box-sizing: border-box; }
+        .inline-edit-btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px; }
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; align-items: end; }
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
+        .form-group input, .form-group select { padding: 8px 10px; border: 1px solid var(--et-border); border-radius: 6px; font-size: 0.9rem; outline: none; background-color: #fff; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+        .btn-primary { background-color: var(--et-red); color: white; }
+        .btn-danger { background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">메뉴 선택</div>
+    <ul class="sidebar-menu">
+        <li><a href="gpa.html" class="active">학점계산기</a></li>
+        <li><a href="graduation.html">졸업사정표</a></li>
+        <li><a href="schedule.html">할 일 목록</a></li>
+        <li><a href="timer.html">열품타 타이머</a></li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="et-header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>학점계산기</h1>
+        <button class="close-btn" style="visibility: hidden;">×</button>
+    </div>
+
+    <div class="et-tabs-wrapper" id="etTabContainer"></div>
+
+    <div class="et-summary-board">
+        <div class="et-stat-box">
+            <h3>전체 평점</h3>
+            <p id="etTotalGpa">0.00<span> / 4.5</span></p>
+        </div>
+        <div class="et-stat-box">
+            <h3>전공 평점</h3>
+            <p id="etMajorGpa">0.00<span> / 4.5</span></p>
+        </div>
+        <div class="et-stat-box">
+            <h3>취득 학점</h3>
+            <p id="etTotalCredits">0<span> / 130</span></p>
+        </div>
+    </div>
+
+    <div class="et-chart-legend">
+        <div class="legend-item"><span class="legend-dot total"></span>전체</div>
+        <div class="legend-item"><span class="legend-dot major"></span>전공</div>
+    </div>
+    <div class="et-chart-container">
+        <canvas id="gpaChart"></canvas>
+    </div>
+
+    <div class="et-grade-distribution" id="etGradeDistribution" style="margin-bottom:30px;"></div>
+
+    <div class="et-sem-detail-header">
+        <div class="et-sem-title-group">
+            <span class="et-sem-title" id="etActiveSemName">3학년 1학기</span>
+            <span class="et-sem-stats">평점 <span id="etActiveSemGpa">0.00</span> 전공 <span id="etActiveSemMajorGpa">0.00</span> 신청 <span id="etActiveSemAttempted">0</span> 취득 <span id="etActiveSemCredits">0</span></span>
+        </div>
+        <button class="et-btn-timetable" onclick="document.getElementById('subjectForm').scrollIntoView({behavior:'smooth',block:'center'})">과목 추가창</button>
+    </div>
+
+    <table class="et-table">
+        <thead>
+            <tr>
+                <th style="width: 52%; text-align: left; padding-left: 8px;">과목명</th>
+                <th style="width: 16%; text-align: center;">학점</th>
+                <th style="width: 16%; text-align: center;">성적</th>
+                <th style="width: 16%; text-align: center;">전공</th>
+            </tr>
+        </thead>
+        <tbody id="etSubjectTableBody"></tbody>
+    </table>
+
+    <div class="card input-card">
+        <h2>새 과목 성적 추가</h2>
+        <form id="subjectForm" class="form-grid">
+            <div class="form-group">
+                <label for="semester">학기</label>
+                <select id="semester" required onchange="changeActiveSemesterTab(this.value)"></select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="subjectName">과목명</label>
+                <input type="text" id="subjectName" placeholder="예: 화공열역학" required>
+            </div>
+            <div class="form-group">
+                <label for="credits">학점</label>
+                <select id="credits" required>
+                    <option value="3">3학점</option>
+                    <option value="2">2학점</option>
+                    <option value="1">1학점</option>
+                    <option value="4">4학점</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="grade">성적</label>
+                <select id="grade" required>
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="C+">C+</option>
+                    <option value="C">C</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="F">F</option>
+                    <option value="P">P (패스)</option>
+                    <option value="NP">NP (논패스)</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="courseType">이수 구분</label>
+                <select id="courseType" required>
+                    <option value="공통교양">공통교양 (지정 13학점)</option>
+                    <option value="핵심교양">핵심교양 (지정 6학점)</option>
+                    <option value="선택교양">선택교양 (지정 25학점)</option>
+                    <option value="전공필수">전공필수 (지정 31학점)</option>
+                    <option value="전공선택">전공선택 (지정 32학점)</option>
+                    <option value="심화필수">심화필수 (지정 9학점)</option>
+                    <option value="일반선택">일반선택 (기타 14학점)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="isRetake">재수강 여부</label>
+                <select id="isRetake" required>
+                    <option value="일반">일반수강</option>
+                    <option value="재수강">재수강</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="isEnglish">영어 구분</label>
+                <select id="isEnglish" required>
+                    <option value="일반">일반 강의</option>
+                    <option value="영어">영어 강의</option>
+                </select>
+            </div>
+            <button type="submit" id="submitBtn" class="btn btn-primary" style="height: 38px;">추가</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    const gradePoints = { 'A+': 4.5, 'A': 4.0, 'B+': 3.5, 'B': 3.0, 'C+': 2.5, 'C': 2.0, 'D+': 1.5, 'D': 1.0, 'F': 0.0, 'P': null, 'NP': null };
+    const semesterOrder = [
+        '1학년 1학기', '1학년 여름계절', '1학년 2학기', '1학년 겨울계절',
+        '2학년 1학기', '2학년 여름계절', '2학년 2학기', '2학년 겨울계절',
+        '3학년 1학기', '3학년 여름계절', '3학년 2학기', '3학년 겨울계절',
+        '4학년 1학기', '4학년 여름계절', '4학년 2학기', '4학년 겨울계절'
+    ];
+    const gradRequirements = { '공통교양': 13, '핵심교양': 6, '선택교양': 25, '전공필수': 31, '전공선택': 32, '심화필수': 9, '일반선택': 14 };
+
+    let subjectData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [];
+    let activeSemester = '3학년 1학기';
+    let gpaChart;
+    let activeInlineEditIndex = -1;
+
+    function initFormAndTabs() {
+        const semesterSelect = document.getElementById('semester');
+        const tabContainer = document.getElementById('etTabContainer');
+        semesterSelect.innerHTML = ''; tabContainer.innerHTML = '';
+
+        const activeSemestersMap = {};
+        subjectData.forEach(sub => { activeSemestersMap[sub.semester] = true; });
+
+        semesterOrder.forEach(sem => {
+            const isSeasonal = sem.includes('계절');
+            const hasData = activeSemestersMap[sem];
+            if (isSeasonal && !hasData) return;
+
+            const opt = document.createElement('option');
+            opt.value = sem; opt.innerText = sem;
+            semesterSelect.appendChild(opt);
+
+            const tab = document.createElement('div');
+            tab.className = `et-tab ${sem === activeSemester ? 'active' : ''}`;
+            tab.innerText = sem;
+            tab.onclick = () => changeActiveSemesterTab(sem);
+            tabContainer.appendChild(tab);
+        });
+        if(semesterSelect.querySelector(`option[value="${activeSemester}"]`)) { semesterSelect.value = activeSemester; }
+    }
+
+    function changeActiveSemesterTab(sem) {
+        activeSemester = sem;
+        initFormAndTabs();
+        activeInlineEditIndex = -1;
+        updateDashboard();
+    }
+
+    document.addEventListener('click', () => { document.querySelectorAll('.inline-grade-picker').forEach(el => el.remove()); });
+
+    function openInlineGradePicker(idx, event) {
+        event.stopPropagation();
+        document.querySelectorAll('.inline-grade-picker').forEach(el => el.remove());
+        const cell = event.currentTarget;
+        const picker = document.createElement('div');
+        picker.className = 'inline-grade-picker';
+        const grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F', 'P', 'NP'];
+        grades.forEach(g => {
+            const item = document.createElement('div');
+            item.className = 'picker-item';
+            item.innerText = g === 'A' ? 'A0' : g;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                subjectData[idx].grade = g;
+                picker.remove();
+                updateDashboard();
+            };
+            picker.appendChild(item);
+        });
+        cell.appendChild(picker);
+    }
+
+    function toggleMajorStatus(idx, event) {
+        event.stopPropagation();
+        const sub = subjectData[idx];
+        const isMajor = (sub.courseType === '전공필수' || sub.courseType === '전공선택' || sub.courseType === '심화필수');
+        sub.courseType = isMajor ? '일반선택' : '전공선택';
+        updateDashboard();
+    }
+
+    function toggleInlineEditPanel(idx, event) {
+        if(event.target.closest('.et-chk-indicator') || event.target.closest('.et-col-grade')) return;
+        activeInlineEditIndex = (activeInlineEditIndex === idx) ? -1 : idx;
+        updateDashboard();
+    }
+
+    function saveInlineFields(idx) {
+        subjectData[idx].name = document.getElementById(`inlineName-${idx}`).value.trim();
+        subjectData[idx].credits = parseInt(document.getElementById(`inlineCredits-${idx}`).value);
+        subjectData[idx].courseType = document.getElementById(`inlineType-${idx}`).value;
+        subjectData[idx].isRetake = document.getElementById(`inlineRetake-${idx}`).value;
+        subjectData[idx].isEnglish = document.getElementById(`inlineEnglish-${idx}`).value;
+        activeInlineEditIndex = -1;
+        updateDashboard();
+    }
+
+    function deleteSubject(idx) {
+        if(confirm('이 과목을 삭제하시겠습니까?')) {
+            subjectData.splice(idx, 1);
+            activeInlineEditIndex = -1;
+            updateDashboard();
+            initFormAndTabs();
+        }
+    }
+
+    function cleanCourseName(name) { return name.replace(/\([^)]*\)/g, '').toUpperCase().replace(/\s+/g, ''); }
+
+    function calculateReplacedCourses() {
+        subjectData.forEach(sub => sub.isReplaced = false);
+        const courseMap = {};
+        subjectData.forEach((sub, index) => {
+            const cleanName = cleanCourseName(sub.name);
+            if (!courseMap[cleanName]) courseMap[cleanName] = [];
+            courseMap[cleanName].push({ index, semIdx: semesterOrder.indexOf(sub.semester) });
+        });
+        Object.keys(courseMap).forEach(cleanName => {
+            const history = courseMap[cleanName];
+            if (history.length > 1) {
+                history.sort((a, b) => a.semIdx - b.semIdx);
+                for (let i = 0; i < history.length - 1; i++) {
+                    subjectData[history[i].index].isReplaced = true;
+                }
+            }
+        });
+    }
+
+    function updateDashboard() {
+        calculateReplacedCourses();
+        localStorage.setItem('subjectDataGrad', JSON.stringify(subjectData));
+
+        let totalCredits = 0; let totalGpSub = 0; let totalGpSum = 0;
+        let majorGpSub = 0; let majorGpSum = 0;
+        let gradeCounts = { 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C+': 0, 'C': 0, 'D+': 0, 'D': 0, 'F': 0, 'P': 0, 'NP': 0 };
+        let validGradeTotalCount = 0;
+
+        let semesterGroups = {};
+        semesterOrder.forEach(sem => { semesterGroups[sem] = { subCredits: 0, pubCredits: 0, gpSub: 0, gpSum: 0, majorGpSub: 0, majorGpSum: 0, subjects: [] }; });
+
+        subjectData.forEach(item => {
+            const credits = Number(item.credits);
+            const pnt = gradePoints[item.grade];
+            const group = semesterGroups[item.semester];
+            if(!group) return;
+            
+            group.subjects.push(item);
+            group.subCredits += credits;
+
+            if (item.grade === 'F' || item.grade === 'NP' || item.isReplaced) {
+                if(!item.isReplaced) { gradeCounts[item.grade]++; validGradeTotalCount++; }
+                return;
+            }
+            group.pubCredits += credits; 
+            totalCredits += credits; 
+            gradeCounts[item.grade]++; 
+            validGradeTotalCount++;
+
+            if(pnt !== null) { 
+                group.gpSub += credits; group.gpSum += (pnt * credits);
+                totalGpSub += credits; totalGpSum += (pnt * credits);
+                if(item.courseType.includes('전공') || item.courseType.includes('심화')) {
+                    group.majorGpSub += credits; group.majorGpSum += (pnt * credits);
+                    majorGpSub += credits; majorGpSum += (pnt * credits);
+                }
+            }
+        });
+
+        document.getElementById('etTotalCredits').innerHTML = `${totalCredits}<span> / 130</span>`;
+        document.getElementById('etTotalGpa').innerHTML = totalGpSub > 0 ? (totalGpSum / totalGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
+        document.getElementById('etMajorGpa').innerHTML = majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) + "<span> / 4.5</span>" : "0.00<span> / 4.5</span>";
+
+        const distContainer = document.getElementById('etGradeDistribution');
+        distContainer.innerHTML = '';
+        const targetGrades = ['A+', 'A', 'B+', 'NP', 'P']; 
+        const barColors = { 'A+': '#e57373', 'A': '#fbc02d', 'B+': '#81c784', 'NP': '#4db6ac', 'P': '#64b5f6' };
+        targetGrades.forEach(g => {
+            const count = gradeCounts[g] || 0;
+            const pct = validGradeTotalCount > 0 ? Math.round((count / validGradeTotalCount) * 100) : 0;
+            distContainer.innerHTML += `<div class="et-dist-row"><div class="et-dist-label">${g === 'A' ? 'A0' : g}</div><div class="et-dist-bar-bg"><div class="et-dist-bar-fill" style="width: ${pct}%; background-color: ${barColors[g]}"></div></div><div class="et-dist-pct">${pct}%</div></div>`;
+        });
+
+        const activeGroup = semesterGroups[activeSemester] || semesterGroups['1학년 1학기'];
+        document.getElementById('etActiveSemName').innerText = activeSemester;
+        document.getElementById('etActiveSemGpa').innerText = activeGroup.gpSub > 0 ? (activeGroup.gpSum / activeGroup.gpSub).toFixed(2) : '0.00';
+        document.getElementById('etActiveSemMajorGpa').innerText = activeGroup.majorGpSub > 0 ? (activeGroup.majorGpSum / activeGroup.majorGpSub).toFixed(2) : '0.00';
+        document.getElementById('etActiveSemAttempted').innerText = activeGroup.subCredits; 
+        document.getElementById('etActiveSemCredits').innerText = activeGroup.pubCredits; 
+
+        const etTbody = document.getElementById('etSubjectTableBody');
+        etTbody.innerHTML = '';
+        if(activeGroup.subjects.length === 0) etTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--et-muted); padding:30px 0;">등록된 과목이 없습니다.</td></tr>`;
+        else {
+            activeGroup.subjects.forEach(sub => {
+                const origIdx = subjectData.findIndex(s => s === sub);
+                const isMajor = (sub.courseType === '전공필수' || sub.courseType === '전공선택' || sub.courseType === '심화필수');
+                let appendLabels = '';
+                if(sub.isReplaced) appendLabels += ` <span class="badge badge-replaced">재수강 탈락</span>`;
+                else if(sub.isRetake === '재수강') appendLabels += ` <span class="badge badge-retake">재수강</span>`;
+                if(sub.isEnglish === '영어') appendLabels += ` <span class="badge badge-eng">영강</span>`;
+
+                etTbody.innerHTML += `
+                    <tr class="draggable-tr" data-index="${origIdx}" onclick="toggleInlineEditPanel(${origIdx}, event)">
+                        <td class="et-col-name">
+                            <div class="course-title-wrapper"><span class="course-name-text">${sub.name}</span><span class="course-labels-wrapper">${appendLabels}</span></div>
+                            <div style="font-size:0.75rem; color:var(--et-muted); margin-top:2px;">${sub.courseType}</div>
+                        </td>
+                        <td class="et-col-center">${sub.credits}학점</td>
+                        <td class="et-col-center et-col-grade" onclick="openInlineGradePicker(${origIdx}, event)" style="font-weight:bold; color:${sub.grade.includes('A')?'#e53e3e':'#292929'}">${sub.grade === 'A' ? 'A0' : sub.grade}</td>
+                        <td class="et-col-center"><span class="et-chk-indicator ${isMajor ? 'checked' : ''}" onclick="toggleMajorStatus(${origIdx}, event)"></span></td>
+                    </tr>
+                `;
+                if(activeInlineEditIndex === origIdx) {
+                    etTbody.innerHTML += `
+                        <tr class="inline-edit-row">
+                            <td colspan="4" style="padding: 12px 8px; border-bottom:1px solid var(--et-border);">
+                                <div class="inline-edit-box">
+                                    <div class="inline-edit-inputs">
+                                        <input type="text" id="inlineName-${origIdx}" value="${sub.name}">
+                                        <select id="inlineCredits-${origIdx}"><option value="1" ${sub.credits==1?'selected':''}>1학점</option><option value="2" ${sub.credits==2?'selected':''}>2학점</option><option value="3" ${sub.credits==3?'selected':''}>3학점</option><option value="4" ${sub.credits==4?'selected':''}>4학점</option></select>
+                                        <select id="inlineType-${origIdx}"><option value="공통교양" ${sub.courseType=='공통교양'?'selected':''}>공통교양</option><option value="핵심교양" ${sub.courseType=='핵심교양'?'selected':''}>핵심교양</option><option value="선택교양" ${sub.courseType=='선택교양'?'selected':''}>선택교양</option><option value="전공필수" ${sub.courseType=='전공필수'?'selected':''}>전공필수</option><option value="전공선택" ${sub.courseType=='전공선택'?'selected':''}>전공선택</option><option value="심화필수" ${sub.courseType=='심화필수'?'selected':''}>심화필수</option><option value="일반선택" ${sub.courseType=='일반선택'?'selected':''}>일반선택</option></select>
+                                        <select id="inlineRetake-${origIdx}"><option value="일반" ${sub.isRetake=='일반'?'selected':''}>일반수강</option><option value="재수강" ${sub.isRetake=='재수강'?'selected':''}>재수강</option></select>
+                                        <select id="inlineEnglish-${origIdx}"><option value="일반" ${sub.isEnglish=='일반'?'selected':''}>일반 강의</option><option value="영어" ${sub.isEnglish=='영어'?'selected':''}>영어 강의</option></select>
+                                    </div>
+                                    <div class="inline-edit-btns"><button class="btn btn-danger" onclick="deleteSubject(${origIdx})">삭제</button><button class="btn btn-primary" style="background-color:var(--et-dark)" onclick="saveInlineFields(${origIdx})">저장</button></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+        }
+        drawGpaChart();
+    }
+
+    function drawGpaChart() {
+        let activeSemesters = [], totalChartData = [], majorChartData = [];
+        const regularSemesters = [
+            { key: '1학년 1학기', label: '1-1' }, { key: '1학년 2학기', label: '1-2' },
+            { key: '2학년 1학기', label: '2-1' }, { key: '2학년 2학기', label: '2-2' },
+            { key: '3학년 1학기', label: '3-1' }, { key: '3학년 2학기', label: '3-2' },
+            { key: '4학년 1학기', label: '4-1' }, { key: '4학년 2학기', label: '4-2' }
+        ];
+        regularSemesters.forEach(sem => {
+            let gpSub = 0; let gpSum = 0; let majorGpSub = 0; let majorGpSum = 0; let hasData = false;
+            subjectData.forEach(item => {
+                if(item.semester !== sem.key || item.isReplaced) return;
+                hasData = true; const credits = Number(item.credits); const pnt = gradePoints[item.grade];
+                if(item.grade === 'F') return;
+                if(pnt !== null) { gpSub += credits; gpSum += (pnt * credits); if(item.courseType.includes('전공') || item.courseType.includes('심화')) { majorGpSub += credits; majorGpSum += (pnt * credits); } }
+            });
+            if(hasData) { activeSemesters.push(sem.label); totalChartData.push(gpSub > 0 ? (gpSum / gpSub).toFixed(2) : '0.00'); majorChartData.push(majorGpSub > 0 ? (majorGpSum / majorGpSub).toFixed(2) : null); }
+        });
+        const ctxGpa = document.getElementById('gpaChart').getContext('2d');
+        if (gpaChart) gpaChart.destroy();
+        gpaChart = new Chart(ctxGpa, {
+            type: 'line',
+            data: { labels: activeSemesters, datasets: [
+                { data: totalChartData, borderColor: '#c62917', borderWidth: 2, pointBackgroundColor: '#c62917', pointRadius: 4, fill: false, tension: 0.1 },
+                { data: majorChartData, borderColor: '#a6a6a6', borderWidth: 2, pointBackgroundColor: '#a6a6a6', pointRadius: 4, fill: false, tension: 0.1, borderDash: [6, 4] }
+            ]},
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 1.0, max: 4.5, grid: { color: '#eaeaea' } }, x: { grid: { display: false } } } }
+        });
+    }
+
+    document.getElementById('subjectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const semester = document.getElementById('semester').value;
+        const name = document.getElementById('subjectName').value.trim();
+        const credits = parseInt(document.getElementById('credits').value);
+        const grade = document.getElementById('grade').value;
+        const courseType = document.getElementById('courseType').value;
+        const isRetake = document.getElementById('isRetake').value;
+        const isEnglish = document.getElementById('isEnglish').value;
+        subjectData.push({ semester, name, credits, grade, courseType, isRetake, isEnglish });
+        this.reset();
+        activeSemester = semester;
+        initFormAndTabs();
+        updateDashboard();
+    });
+
+    initFormAndTabs();
+    updateDashboard();
+</script>
+</body>
+</html>

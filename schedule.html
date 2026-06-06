@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <title>할 일 목록 & 캘린더</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --et-red: #c62917;
+            --et-red-light: #fef2f2;
+            --et-dark: #292929;
+            --et-muted: #a6a6a6;
+            --et-light-gray: #f2f2f2;
+            --et-border: #e3e3e3;
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --danger-color: #ef4444;
+            accent-color: #c62917;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--et-dark);
+            margin: 0;
+            padding: 0 0 40px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(40px + env(safe-area-inset-bottom));
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        html { -webkit-text-size-adjust: 100%; }
+        input, button { font-size: 16px; font-family: inherit; }
+        button { touch-action: manipulation; }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0 16px;
+        }
+
+        /* 헤더 레이아웃 (메뉴 버튼 포함) */
+        .et-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 50px;
+            border-bottom: 1px solid var(--et-border);
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        .et-header h1 { font-size: 1.2rem; font-weight: 700; margin: 0; position: absolute; left: 50%; transform: translateX(-50%); }
+        .dummy-btn { width: 44px; visibility: hidden; }
+
+        /* 사이드바 UI */
+        .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); display: flex; align-items: center; justify-content: center; height: 100%; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
+        .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 12px; }
+        .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
+
+        /* 기존 컴포넌트 스타일 */
+        .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 16px; border-left: 4px solid var(--et-red); padding-left: 10px; font-weight: 700; }
+        
+        .form-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .form-group label { font-size: 0.82rem; color: var(--et-muted); margin-bottom: 4px; font-weight: 500; }
+        .btn { padding: 8px 14px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-size: 0.85rem; }
+        .btn-primary { background-color: var(--et-red); color: white; }
+        .btn-danger { background-color: transparent; color: var(--danger-color); border: 1px solid var(--danger-color); }
+
+        /* 할 일 추가 UI */
+        .todo-input-box { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        .todo-input-box input[type="text"] { width: 100%; padding: 10px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.92rem; outline: none; box-sizing: border-box; }
+        .todo-input-box input:focus { border-color: var(--et-red); }
+        
+        .todo-sub-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; margin: 0; padding: 0; }
+        .todo-sub-fields input#todoLocation { grid-column: span 2; width: 100% !important; box-sizing: border-box; }
+        
+        .todo-datetime-group { display: flex; flex-direction: column; gap: 4px; width: 100%; box-sizing: border-box; min-width: 0; }
+        .todo-datetime-group span { font-size: 0.75rem; color: var(--et-dark); font-weight: 700; padding-left: 2px; }
+        
+        .todo-sub-fields input, .todo-inline-edit-box input { 
+            width: 100%; max-width: 100%; padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; 
+            font-size: 0.88rem; font-weight: 500; box-sizing: border-box; outline: none; background: #fff; 
+            color: var(--et-dark); transition: all 0.2s ease; letter-spacing: -0.01em;
+        }
+        .todo-sub-fields input:focus, .todo-inline-edit-box input:focus { border-color: var(--et-red); background-color: var(--et-red-light); box-shadow: 0 0 0 3px rgba(198, 41, 23, 0.08); }
+        
+        .todo-sub-fields input[type="datetime-local"], .todo-inline-edit-box input[type="datetime-local"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        .todo-sub-fields input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+        .todo-inline-edit-box input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            filter: invert(19%) sepia(87%) saturate(4156%) hue-rotate(352deg) brightness(81%) contrast(98%);
+        }
+
+        .todo-inline-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; box-sizing: border-box; }
+
+        @media (max-width: 480px) {
+            .todo-sub-fields { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
+            .todo-sub-fields input#todoLocation { width: 100% !important; }
+            .todo-inline-edit-grid { display: flex !important; flex-direction: column !important; gap: 10px; width: 100% !important; }
+
+            .todo-sub-fields input[type="datetime-local"],
+            .todo-inline-edit-box input[type="datetime-local"] { 
+                width: 100% !important; 
+                max-width: 100% !important; 
+                min-width: 0 !important; 
+                height: 40px !important; 
+                min-height: 40px !important; 
+                padding: 8px 12px !important; 
+                line-height: 24px !important; 
+                box-sizing: border-box !important;
+            }
+        }
+        
+        /* 스크롤 뷰포트 */
+        .todo-scroll-viewport {
+            max-height: 240px; 
+            overflow-y: auto;
+            border: 1px solid var(--et-light-gray);
+            border-radius: 8px;
+            padding: 0 6px;
+            background-color: #fafafa;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+        }
+        .todo-scroll-viewport::-webkit-scrollbar { width: 4px; }
+        .todo-scroll-viewport::-webkit-scrollbar-thumb { background-color: var(--et-border); border-radius: 4px; }
+
+        .todo-list-section-title { font-size: 0.95rem; font-weight: 700; color: var(--et-dark); margin: 20px 0 8px 2px; }
+        .todo-list { list-style: none; padding: 0; margin: 0; }
+        
+        /* 할 일 항목 스타일 */
+        .todo-item-container { display: flex; flex-direction: column; background: #fff; margin: 6px 0; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); overflow: hidden; border: 1px solid transparent; }
+        .todo-item { display: flex; align-items: flex-start; justify-content: space-between; padding: 12px 8px; font-size: 0.95rem; }
+        .todo-left { display: flex; align-items: flex-start; gap: 10px; width: 85%; cursor: pointer; padding: 2px; }
+        .todo-text-container { display: flex; flex-direction: column; width: calc(100% - 28px); }
+        .todo-text { font-weight: 500; word-break: break-all; transition: color 0.2s; color: #000; line-height: 1.4; }
+        .todo-text.done { text-decoration: line-through; color: var(--et-muted); }
+        .todo-meta-line { font-size: 0.78rem; color: var(--et-muted); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+
+        /* 체크박스 인디케이터 */
+        .et-chk-indicator {
+            width: 18px; height: 18px; border: 1px solid var(--et-border);
+            border-radius: 4px; display: inline-block; vertical-align: middle;
+            position: relative; cursor: pointer; transition: all 0.15s; flex-shrink: 0; margin-top: 2px;
+        }
+        .et-chk-indicator.checked { background-color: var(--et-red); border-color: var(--et-red); }
+        .et-chk-indicator.checked::after {
+            content: '✓'; color: #fff; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+
+        /* 인라인 수정 창 */
+        .todo-inline-edit-box { display: flex; flex-direction: column; gap: 10px; padding: 12px 10px; background-color: #fdfdfd; border-top: 1px dashed var(--et-border); box-sizing: border-box; }
+        .todo-inline-edit-box input[type="text"] { padding: 10px 12px; border: 1px solid var(--et-border); border-radius: 8px; font-size: 0.88rem; outline: none; }
+        .todo-inline-edit-box input[type="datetime-local"] { accent-color: var(--et-red); font-weight: 500; color: var(--et-dark); }
+
+        /* 캘린더 스타일 */
+        .et-cal-container { width: 100%; border: 1px solid var(--et-border); border-radius: 14px; overflow: hidden; background: #fff; margin-bottom: 20px; padding: 14px 12px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .et-cal-top-control { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        
+        .et-cal-year-badge { 
+            background: var(--et-red-light); 
+            color: var(--et-red); 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            font-size: 0.82rem; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            border: 1px solid rgba(198, 41, 23, 0.12); 
+            transition: all 0.2s ease; 
+        }
+        .et-cal-year-badge:active { background: var(--et-red); color: #ffffff; border-color: var(--et-red); }
+        .et-cal-month-title { font-size: 1.4rem; font-weight: 700; color: #000; margin: 0 auto 0 4px; }
+        
+        .et-cal-grid-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 700; color: var(--et-muted); padding-bottom: 8px; border-bottom: 1px solid var(--et-light-gray); margin-bottom: 4px; }
+        .et-cal-main-body { display: grid; grid-template-columns: repeat(7, 1fr); background: #fff; }
+        
+        .et-cal-day-cell { 
+            height: 82px; 
+            max-height: 82px; 
+            border-bottom: 1px solid #f9f9f9; 
+            border-right: 1px solid #f9f9f9; 
+            padding: 2px 0px; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: stretch; 
+            position: relative; 
+            overflow: visible; 
+        }
+        .et-cal-date-num { font-size: 0.8rem; font-weight: 700; color: #000; margin-bottom: 2px; align-self: center; z-index: 5; position: relative; }
+        .et-cal-day-cell.other-month .et-cal-date-num { color: #e0e0e0; font-weight: 400; }
+        .et-cal-day-cell.sun .et-cal-date-num { color: #e53e3e; }
+        .et-cal-day-cell.sat .et-cal-date-num { color: #3182ce; }
+        
+        .et-cal-day-cell.today-focus { background-color: #fffafb; }
+        .et-cal-day-cell.today-focus .et-cal-date-num { background: var(--et-red); color: #fff !important; width: 18px; height: 18px; border-radius: 50%; text-align: center; line-height: 18px; font-size: 0.72rem; display: inline-block; }
+        
+        /* 캘린더 내부 막대(Pill) */
+        .et-cal-event-pill { 
+            position: absolute;
+            height: 15px; 
+            font-size: 0.63rem; 
+            font-weight: bold; 
+            padding: 1px 5px; 
+            box-sizing: border-box; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+            text-align: left; 
+            line-height: 12px; 
+            border: none;
+            z-index: 10;
+            cursor: pointer;
+        }
+        
+        .pill-slot-0 { top: 21px; }
+        .pill-slot-1 { top: 39px; }
+        .pill-slot-2 { top: 57px; }
+
+        .et-cal-event-pill.color-pill-0 { background-color: #ffebee; color: var(--et-red); }
+        .et-cal-event-pill.color-pill-1 { background-color: #e3f2fd; color: #1e88e5; }
+        .et-cal-event-pill.color-pill-2 { background-color: #f3e5f5; color: #8e24aa; }
+        .et-cal-event-pill.color-pill-3 { background-color: #fff3e0; color: #e65100; }
+        .et-cal-event-pill.color-pill-4 { background-color: #e0f2f1; color: #004d40; }
+        
+        .et-cal-event-pill.green-pill { background-color: #e8f5e9; color: #43a047; }
+        .et-cal-event-pill.done-pill { background-color: #f2f2f2; color: #a6a6a6; text-decoration: line-through; }
+        
+        /* 긴급 마감 알림 블록 */
+        .et-urgent-todo-card {
+            background-color: var(--et-red-light);
+            border: 1px solid rgba(198, 41, 23, 0.2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .urgent-todo-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--et-red);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .urgent-todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.82rem;
+            color: #444;
+        }
+        .urgent-todo-item {
+            padding: 3px 0;
+            border-bottom: 1px dashed rgba(198, 41, 23, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .urgent-todo-item:last-child { border-bottom: none; }
+        
+        /* 백업 / 복구 */
+        .backup-restore-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--et-border);
+        }
+        .btn-backup { background-color: var(--et-dark); color: #fff; }
+        .btn-restore { background-color: #f2f2f2; color: #333; border: 1px solid var(--et-border); }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">메뉴 선택</div>
+    <ul class="sidebar-menu">
+        <li><a href="gpa.html">학점계산기</a></li>
+        <li><a href="graduation.html">졸업사정표</a></li>
+        <li><a href="schedule.html" class="active">할 일 목록</a></li>
+        <li><a href="timer.html">타이머</a></li>
+    </ul>
+</div>
+
+<div class="container">
+    <div class="et-header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>할 일 목록</h1>
+        <div class="dummy-btn"></div>
+    </div>
+
+    <div class="et-urgent-todo-card" id="etUrgentTodoBlock">
+        <div class="urgent-todo-title">🚨 곧 마감 임박! (3일 이내 마감)</div>
+        <ul class="urgent-todo-list" id="etUrgentTodoContainer"></ul>
+    </div>
+
+    <div class="et-cal-container">
+        <div class="et-cal-top-control">
+            <button class="et-cal-year-badge" onclick="moveCalendarMonth(-1)">◀</button>
+            <div class="et-cal-month-title" id="calMonthDisplay">5월</div>
+            <button class="et-cal-year-badge" onclick="moveCalendarMonth(1)">▶</button>
+            <button class="et-cal-year-badge" style="margin-left:auto;" onclick="jumpToTodayMonth()">오늘</button>
+        </div>
+        <div class="et-cal-grid-header">
+            <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+        </div>
+        <div class="et-cal-main-body" id="calMainGridBody"></div>
+    </div>
+
+    <div class="card">
+        <h2>할 일 등록</h2>
+        <div class="todo-input-box">
+            <input type="text" id="todoInput" placeholder="할 일을 입력하세요..." onkeypress="if(event.keyCode===13) addTodo()">
+            
+            <div class="todo-sub-fields">
+                <div class="todo-datetime-group">
+                    <span>시작 일시</span>
+                    <input type="datetime-local" id="todoStart">
+                </div>
+                <div class="todo-datetime-group">
+                    <span>마감 일시</span>
+                    <input type="datetime-local" id="todoDeadline">
+                </div>
+                <input type="text" id="todoLocation" placeholder="장소 (기본없음)">
+            </div>
+            <button class="btn btn-primary" onclick="addTodo()" style="margin-top: 4px;">등록</button>
+        </div>
+
+        <div class="todo-list-section-title">남은 할 일</div>
+        <div class="todo-scroll-viewport">
+            <ul class="todo-list" id="todoCurrentListContainer"></ul>
+        </div>
+
+        <div class="todo-list-section-title" style="color:var(--et-muted);">지난 할 일</div>
+        <div class="todo-scroll-viewport">
+            <ul class="todo-list" id="todoPastListContainer"></ul>
+        </div>
+
+        <div class="backup-restore-group">
+            <button class="btn btn-backup" onclick="exportAppDataToFile()">데이터 백업</button>
+            <button class="btn btn-restore" onclick="document.getElementById('etDataFileInput').click()">데이터 복구</button>
+            <input type="file" id="etDataFileInput" style="display:none;" accept=".txt" onchange="importAppDataFromFile(event)">
+        </div>
+    </div>
+</div>
+
+<script>
+    let todoData = JSON.parse(localStorage.getItem('todoDataGrad')) || [
+        { id: 1, text: '공인영어성적 TOEIC 제출하기', done: false, start: '2026-06-01T09:00', deadline: '2026-06-05T18:00', location: '학부사무실' },
+        { id: 2, text: '화공생명종합설계 기말 대체 과제 제출', done: true, start: '2026-05-18T09:00', deadline: '2026-05-28T23:59', location: '블랙보드' }
+    ];
+
+    let calViewDate = new Date(); 
+    let activeTodoInlineEditIndex = -1; 
+
+    // 사이드바 토글 제어 함수
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    function toggleTodoInlineEditPanel(id, event) {
+        if(event.target.closest('.et-chk-indicator') || event.target.tagName === 'BUTTON') return;
+        activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
+        renderTodoList();
+    }
+
+    function toggleTodoInlineEditPanelFromCalendar(id) {
+        activeTodoInlineEditIndex = (activeTodoInlineEditIndex === id) ? -1 : id;
+        renderTodoList();
+    }
+
+    function saveTodoInlineFields(id) {
+        const textVal = document.getElementById(`inlineTodoText-${id}`).value.trim();
+        const startVal = document.getElementById(`inlineTodoStart-${id}`).value;
+        const deadlineVal = document.getElementById(`inlineTodoDeadline-${id}`).value;
+        const locVal = document.getElementById(`inlineTodoLocation-${id}`).value.trim();
+
+        if(!textVal) return alert('내용을 정확히 입력해주세요.');
+        if(!deadlineVal) return alert('마감 일시는 필수 항목입니다.');
+
+        const todo = todoData.find(t => t.id === id);
+        if(todo) {
+            todo.text = textVal;
+            todo.start = startVal || deadlineVal; 
+            todo.deadline = deadlineVal;
+            todo.location = locVal;
+        }
+        activeTodoInlineEditIndex = -1;
+        renderTodoList();
+    }
+
+    function renderTodoList() {
+        localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
+
+        const currentContainer = document.getElementById('todoCurrentListContainer');
+        const pastContainer = document.getElementById('todoPastListContainer');
+        
+        currentContainer.innerHTML = '';
+        pastContainer.innerHTML = '';
+
+        const now = new Date();
+        let currentCount = 0; let pastCount = 0;
+        
+        let urgentHtml = '';
+        let hasUrgent = false;
+
+        todoData.forEach((todo) => {
+            let isPastDeadline = false;
+            if(todo.deadline) {
+                const deadlineDate = new Date(todo.deadline);
+                if(deadlineDate < now) isPastDeadline = true;
+                
+                const diffTime = deadlineDate - now;
+                const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                if(!todo.done && diffDays >= 0 && diffDays <= 3) {
+                    hasUrgent = true;
+                    let remainingText = diffDays < 1 ? `${Math.round(diffTime / (1000*60*60))}시간 남음` : `${Math.ceil(diffDays)}일 남음`;
+                    urgentHtml += `<li class="urgent-todo-item"><span>• ${todo.text}</span><strong style="color:var(--et-red);">${remainingText}</strong></li>`;
+                }
+            }
+
+            let metaLineHtml = '';
+            if(todo.start || todo.deadline || todo.location) {
+                let startText = todo.start ? todo.start.replace('T', ' ') : '';
+                let endText = todo.deadline ? todo.deadline.replace('T', ' ') : '';
+                let periodText = (startText || endText) ? `기간: ${startText} ~ ${endText}` : '';
+                let locText = todo.location ? `장소: ${todo.location}` : '';
+                metaLineHtml = `<div class="todo-meta-line">${periodText} ${periodText&&locText?'|':''} ${locText}</div>`;
+            }
+
+            let innerItemHtml = `
+                <div class="todo-item" onclick="toggleTodoInlineEditPanel(${todo.id}, event)">
+                    <div class="todo-left">
+                        <span class="et-chk-indicator ${todo.done ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTodo(${todo.id})"></span>
+                        <div class="todo-text-container">
+                            <span class="todo-text ${todo.done ? 'done' : ''}">${todo.text}</span>
+                            ${metaLineHtml}
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem; flex-shrink:0;" onclick="event.stopPropagation(); deleteTodo(${todo.id})">삭제</button>
+                </div>
+            `;
+
+            if(activeTodoInlineEditIndex === todo.id) {
+                innerItemHtml += `
+                    <div class="todo-inline-edit-box" id="todoInlineEditBox-${todo.id}">
+                        <input type="text" id="inlineTodoText-${todo.id}" value="${todo.text}" placeholder="내용">
+                        <div class="todo-inline-edit-grid">
+                            <input type="datetime-local" id="inlineTodoStart-${todo.id}" value="${todo.start||''}">
+                            <input type="datetime-local" id="inlineTodoDeadline-${todo.id}" value="${todo.deadline||''}">
+                        </div>
+                        <input type="text" id="inlineTodoLocation-${todo.id}" value="${todo.location||''}" placeholder="장소">
+                        <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:4px;">
+                            <button class="btn" style="background:#e2e8f0;" onclick="activeTodoInlineEditIndex=-1; renderTodoList();">취소</button>
+                            <button class="btn btn-primary" style="background:var(--et-dark);" onclick="saveTodoInlineFields(${todo.id})">저장</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const wrapperLi = document.createElement('li');
+            wrapperLi.className = 'todo-item-container';
+            wrapperLi.innerHTML = innerItemHtml;
+
+            if (isPastDeadline) {
+                pastContainer.appendChild(wrapperLi); pastCount++;
+            } else {
+                currentContainer.appendChild(wrapperLi); currentCount++;
+            }
+        });
+
+        const urgentBlock = document.getElementById('etUrgentTodoBlock');
+        if(hasUrgent) {
+            document.getElementById('etUrgentTodoContainer').innerHTML = urgentHtml;
+            urgentBlock.style.display = 'block';
+        } else {
+            urgentBlock.style.display = 'none';
+        }
+
+        if(currentCount === 0) currentContainer.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:20px 0; font-size:0.9rem;">남은 할 일이 없습니다.</li>`;
+        if(pastCount === 0) pastContainer.innerHTML = `<li style="text-align:center; color:var(--et-muted); padding:20px 0; font-size:0.9rem;">지난 할 일이 없습니다.</li>`;
+
+        generateCalendarGrid();
+
+        if(activeTodoInlineEditIndex !== -1) {
+            setTimeout(() => {
+                const targetBox = document.getElementById(`todoInlineEditBox-${activeTodoInlineEditIndex}`);
+                if(targetBox) {
+                    targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 80);
+        }
+    }
+
+    function generateCalendarGrid() {
+        const year = calViewDate.getFullYear();
+        const month = calViewDate.getMonth(); 
+
+        document.getElementById('calMonthDisplay').innerText = `${year}년 ${month + 1}월`;
+        const gridBody = document.getElementById('calMainGridBody');
+        gridBody.innerHTML = '';
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const totalDays = new Date(year, month + 1, 0).getDate();
+        const prevTotalDays = new Date(year, month, 0).getDate();
+
+        const calendarDays = [];
+        for(let i = firstDayIndex - 1; i >= 0; i--) {
+            calendarDays.push({ date: new Date(year, month - 1, prevTotalDays - i), isCurrentMonth: false });
+        }
+        for(let d = 1; d <= totalDays; d++) {
+            calendarDays.push({ date: new Date(year, month, d), isCurrentMonth: true });
+        }
+        const remaining = 42 - calendarDays.length;
+        for(let n = 1; n <= remaining; n++) {
+            calendarDays.push({ date: new Date(year, month + 1, n), isCurrentMonth: false });
+        }
+
+        todoData.forEach(todo => {
+            if(!todo.deadline) return;
+            const taskStart = new Date(todo.start).getTime();
+            const taskEnd = new Date(todo.deadline).getTime();
+            
+            let startIndex = -1; let endIndex = -1;
+            for(let i=0; i<42; i++) {
+                const dayStart = new Date(calendarDays[i].date).setHours(0,0,0,0);
+                const dayStartEnd = new Date(calendarDays[i].date).setHours(23,59,59,999);
+                if(taskStart <= dayStartEnd && taskEnd >= dayStart) {
+                    if(startIndex === -1) startIndex = i;
+                    endIndex = i;
+                }
+            }
+            todo._range = (startIndex !== -1) ? { start: startIndex, end: endIndex } : null;
+        });
+
+        const visibleTodos = todoData.filter(t => t._range).sort((a, b) => {
+            return (b._range.end - b._range.start) - (a._range.end - a._range.start) || a.id - b.id;
+        });
+
+        const daySlots = Array.from({ length: 42 }, () => []);
+        visibleTodos.forEach(todo => {
+            const { start, end } = todo._range;
+            let slot = 0;
+            while (true) {
+                let free = true;
+                for (let i = start; i <= end; i++) {
+                    if (daySlots[i][slot] !== undefined) { free = false; break; }
+                }
+                if (free) break;
+                slot++;
+            }
+            for (let i = start; i <= end; i++) { daySlots[i][slot] = todo; }
+            todo._slot = slot;
+        });
+
+        const systemNow = new Date();
+        for(let i = 0; i < 42; i++) {
+            const dayObj = calendarDays[i];
+            const cell = document.createElement('div');
+            cell.className = 'et-cal-day-cell';
+            if(!dayObj.isCurrentMonth) cell.classList.add('other-month');
+
+            const currentDayOfWeek = dayObj.date.getDay();
+            if(currentDayOfWeek === 0) cell.classList.add('sun');
+            if(currentDayOfWeek === 6) cell.classList.add('sat');
+
+            if(year === systemNow.getFullYear() && month === systemNow.getMonth() && dayObj.date.getDate() === systemNow.getDate() && dayObj.isCurrentMonth) {
+                cell.classList.add('today-focus');
+            }
+
+            cell.innerHTML = `<span class="et-cal-date-num">${dayObj.date.getDate()}</span>`;
+
+            for(let s = 0; s < 3; s++) {
+                const todo = daySlots[i][s];
+                if(todo) {
+                    let rowStart = Math.floor(i / 7) * 7;
+                    let rowEnd = rowStart + 6;
+                    
+                    let isPillOrigin = (i === todo._range.start || i === rowStart);
+
+                    if(isPillOrigin) {
+                        let spanEnd = Math.min(todo._range.end, rowEnd);
+                        let colSpan = spanEnd - i + 1;
+                        
+                        let isAbsoluteStart = (i === todo._range.start);
+                        let isAbsoluteEnd = (spanEnd === todo._range.end);
+
+                        let colorClass = 'color-pill-0';
+                        const dlDate = new Date(todo.deadline);
+                        if(dlDate < systemNow) {
+                            colorClass = 'done-pill';
+                        } else if(todo.done) {
+                            colorClass = 'green-pill';
+                        } else {
+                            colorClass = `color-pill-${todo.id % 5}`;
+                        }
+
+                        let leftStyle = '0px';
+                        let widthStyle = `calc(${colSpan} * 100%)`;
+                        let radiusStyle = '0px';
+
+                        if (isAbsoluteStart && isAbsoluteEnd) {
+                            leftStyle = '4px';
+                            widthStyle = `calc(${colSpan} * 100% - 8px) `;
+                            radiusStyle = '4px';
+                        } else if (isAbsoluteStart) {
+                            leftStyle = '4px';
+                            widthStyle = `calc(${colSpan} * 100% - 4px + 1px) `;
+                            radiusStyle = '4px 0 0 4px';
+                        } else if (isAbsoluteEnd) {
+                            leftStyle = '0px';
+                            widthStyle = `calc(${colSpan} * 100% - 4px) `;
+                            radiusStyle = '0 4px 4px 0';
+                        } else {
+                            leftStyle = '0px';
+                            widthStyle = `calc(${colSpan} * 100% + 1px) `;
+                            radiusStyle = '0';
+                        }
+
+                        const slotClass = `pill-slot-${s}`;
+                        let textContent = isAbsoluteStart ? todo.text : '';
+                        
+                        cell.innerHTML += `<div class="et-cal-event-pill ${colorClass} ${slotClass}" style="left: ${leftStyle}; width: ${widthStyle}; border-radius: ${radiusStyle};" onclick="toggleTodoInlineEditPanelFromCalendar(${todo.id})">${textContent}</div>`;
+                    }
+                }
+            }
+            gridBody.appendChild(cell);
+        }
+    }
+
+    function moveCalendarMonth(delta) {
+        calViewDate.setMonth(calViewDate.getMonth() + delta);
+        generateCalendarGrid();
+    }
+
+    function jumpToTodayMonth() {
+        calViewDate = new Date();
+        generateCalendarGrid();
+    }
+
+    function addTodo() {
+        const input = document.getElementById('todoInput');
+        const startInput = document.getElementById('todoStart');
+        const dlInput = document.getElementById('todoDeadline');
+        const locInput = document.getElementById('todoLocation');
+        
+        const text = input.value.trim();
+        if(!text) return;
+        
+        let startVal = startInput.value;
+        const deadlineVal = dlInput.value;
+
+        if(!deadlineVal) return alert('마감 일시는 필수로 지정하셔야 합니다.');
+
+        if(!startVal && deadlineVal) {
+            startVal = deadlineVal;
+        }
+        
+        todoData.push({ 
+            id: Date.now(), 
+            text: text, 
+            done: false, 
+            start: startVal,
+            deadline: deadlineVal, 
+            location: locInput.value.trim() 
+        });
+        
+        input.value = ''; startInput.value = ''; dlInput.value = ''; locInput.value = '';
+        renderTodoList();
+    }
+
+    function toggleTodo(id) {
+        const todo = todoData.find(t => t.id === id);
+        if(todo) todo.done = !todo.done;
+        renderTodoList();
+    }
+
+    function deleteTodo(id) {
+        if(confirm('이 할 일을 삭제하시겠습니까?')) {
+            todoData = todoData.filter(t => t.id !== id);
+            activeTodoInlineEditIndex = -1;
+            renderTodoList();
+        }
+    }
+
+    function exportAppDataToFile() {
+        const backupObject = {
+            todoDataGrad: todoData
+        };
+        
+        const dataStr = JSON.stringify(backupObject, null, 4);
+        const dataBlob = new Blob([dataStr], { type: 'text/plain;charset=utf-8' });
+        const downloadLink = document.createElement('a');
+        
+        const now = new Date();
+        const dateStamp = now.getFullYear() + ('0' + (now.getMonth() + 1)).slice(-2) + ('0' + now.getDate()).slice(-2);
+        
+        downloadLink.download = `할일목록_백업데이터_${dateStamp}.txt`;
+        downloadLink.href = URL.createObjectURL(dataBlob);
+        downloadLink.click();
+        URL.revokeObjectURL(downloadLink.href);
+    }
+
+    function importAppDataFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (importedData.todoDataGrad) {
+                    if (confirm('파일 데이터를 읽어왔습니다. 기존 등록 정보를 지우고 백업 데이터로 교체하시겠습니까?')) {
+                        todoData = importedData.todoDataGrad;
+                        localStorage.setItem('todoDataGrad', JSON.stringify(todoData));
+                        
+                        alert('데이터 복구가 성공적으로 완료되었습니다.');
+                        location.reload(); 
+                    }
+                } else {
+                    alert('유효한 백업 파일 형식이 아닙니다.');
+                }
+            } catch (err) {
+                alert('파일을 파싱하는 도중 오류가 발생했습니다. 올바른 텍스트 파일을 지정해 주세요.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; 
+    }
+
+    renderTodoList();
+</script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>스터디 타이머</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-border: #e3e3e3;
+            --bg-color: #f8f9fa; --card-bg: #ffffff;
+        }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
+        .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); background:#fff; width:100%; box-sizing:border-box; padding:0 16px; }
+        .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+        
+        /* 사이드바 UI 추가 */
+        .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
+        .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay.active { display: block; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu li { margin-bottom: 12px; }
+        .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
+        .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
+
+        .timer-display { font-size: 3.5rem; font-weight: 700; color: var(--et-dark); text-align: center; margin: 40px 0; font-variant-numeric: tabular-nums; }
+        .card { background: var(--card-bg); border-radius: 16px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; border:1px solid var(--et-border); }
+        .select-subject { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--et-border); font-size: 1rem; margin-bottom: 20px; outline:none; }
+        .btn-group { display: flex; gap: 10px; justify-content: center; }
+        .btn { padding: 12px 28px; border-radius: 30px; font-weight: 700; border: none; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+        .btn-start { background: var(--et-red); color: white; }
+        .btn-start:hover { background: #b02313; }
+        .btn-stop { background: #64748b; color: white; }
+        .subject-record-item { display: flex; justify-content: space-between; padding: 12px 6px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-title">메뉴 선택</div>
+    <ul class="sidebar-menu">
+        <li><a href="gpa.html">학점계산기</a></li>
+        <li><a href="graduation.html">졸업사정표</a></li>
+        <li><a href="schedule.html">할 일 목록</a></li>
+        <li><a href="timer.html" class="active">열품타 타이머</a></li>
+    </ul>
+</div>
+
+<div class="container" style="padding:0;">
+    <div class="et-header">
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <h1>열품타 스터디 타이머</h1>
+        <button class="close-btn" style="visibility: hidden;">×</button>
+    </div>
+    
+    <div style="padding:0 16px; margin-top:20px;">
+        <div class="card">
+            <h3 style="margin-top:0; color:#64748b; font-weight:500; font-size:0.9rem;">오늘 측정중인 과목</h3>
+            <select id="timerSubjectSelect" class="select-subject">
+                <option value="일반공부">자율 개인 공부</option>
+            </select>
+
+            <div class="timer-display" id="clockDisplay">00:00:00</div>
+
+            <div class="btn-group">
+                <button class="btn btn-start" id="timerControlBtn" onclick="toggleTimerEngine()">공부 시작</button>
+                <button class="btn btn-stop" onclick="resetTimerEngine()">초기화</button>
+            </div>
+        </div>
+
+        <div class="card" style="text-align:left;">
+            <h2 style="font-size:1.05rem; margin-top:0; border-left:4px solid var(--et-red); padding-left:10px;">오늘의 과목별 공부 기록</h2>
+            <div id="todayRecordContainer"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    }
+
+    let timerInterval = null;
+    let elapsedSeconds = 0;
+    let isTimerRunning = false;
+    let trackingRecords = JSON.parse(localStorage.getItem('studyTimerRecords')) || {};
+
+    function loadSubjectsFromGpa() {
+        const subjectData = JSON.parse(localStorage.getItem('subjectDataGrad')) || [];
+        const selectElement = document.getElementById('timerSubjectSelect');
+        
+        // 고유 과목 필터링 및 옵션 동적 동기화 삽입
+        const uniqueNames = [...new Set(subjectData.map(s => s.name))];
+        uniqueNames.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name; opt.innerText = name;
+            selectElement.appendChild(opt);
+        });
+    }
+
+    function toggleTimerEngine() {
+        const btn = document.getElementById('timerControlBtn');
+        const select = document.getElementById('timerSubjectSelect');
+
+        if(!isTimerRunning) {
+            isTimerRunning = true;
+            select.disabled = true;
+            btn.innerText = "일시 정지";
+            btn.style.background = "#64748b";
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                document.getElementById('clockDisplay').innerText = formatTimeSpan(elapsedSeconds);
+            }, 1000);
+        } else {
+            isTimerRunning = false;
+            select.disabled = false;
+            btn.innerText = "공부 시작";
+            btn.style.background = "var(--et-red)";
+            clearInterval(timerInterval);
+            saveCurrentTimeRecord();
+        }
+    }
+
+    function saveCurrentTimeRecord() {
+        const targetSubject = document.getElementById('timerSubjectSelect').value;
+        trackingRecords[targetSubject] = (trackingRecords[targetSubject] || 0) + elapsedSeconds;
+        localStorage.setItem('studyTimerRecords', JSON.stringify(trackingRecords));
+        elapsedSeconds = 0;
+        document.getElementById('clockDisplay').innerText = "00:00:00";
+        renderRecordsTimeline();
+    }
+
+    function resetTimerEngine() {
+        if(confirm('진행중인 타이머를 기록하지 않고 초기화하시겠습니까?')) {
+            clearInterval(timerInterval);
+            elapsedSeconds = 0;
+            isTimerRunning = false;
+            document.getElementById('timerSubjectSelect').disabled = false;
+            document.getElementById('clockDisplay').innerText = "00:00:00";
+            document.getElementById('timerControlBtn').innerText = "공부 시작";
+            document.getElementById('timerControlBtn').style.background = "var(--et-red)";
+        }
+    }
+
+    function formatTimeSpan(sec) {
+        let h = Math.floor(sec / 3600); let m = Math.floor((sec % 3600) / 60); let s = sec % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function renderRecordsTimeline() {
+        const container = document.getElementById('todayRecordContainer');
+        container.innerHTML = '';
+        if(Object.keys(trackingRecords).length === 0) {
+            container.innerHTML = `<div style="color:var(--et-muted); text-align:center; padding:15px 0;">오늘 측정된 누적 통계 기록이 존재하지 않습니다.</div>`;
+            return;
+        }
+        Object.keys(trackingRecords).forEach(sub => {
+            container.innerHTML += `
+                <div class="subject-record-item">
+                    <strong>📘 ${sub}</strong>
+                    <span>${formatTimeSpan(trackingRecords[sub])}</span>
+                </div>
+            `;
+        });
+    }
+
+    window.onload = function() {
+        loadSubjectsFromGpa();
+        renderRecordsTimeline();
+    }
+</script>
+</body>
+</html>
