@@ -64,7 +64,7 @@
 <div class="container" style="padding:0;">
     <div class="et-header">
         <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-        <h1>열품타 스터디 타이머</h1>
+        <h1>스터디 타이머</h1>
         <button style="visibility: hidden;">×</button>
     </div>
     
@@ -161,6 +161,9 @@
         loadCombinedSubjects();
         renderRecordsTimeline();
         updateChart();
+        
+        // 앱이 다시 켜졌을 때 이전에 구동 중이던 타이머가 있었는지 검증 및 복구
+        checkRunningTimerOnLoad();
     }
 
     // 학기 연동 데이터(gpa.html) 및 공통 과목 통합 로드 함수
@@ -242,7 +245,7 @@
         }
     }
 
-    // 타이머 엔진 제어 파트
+    // 타이머 엔진 제어 파트 (화면 꺼짐 대비 개선 로직 적용)
     function toggleTimerEngine() {
         const btn = document.getElementById('timerControlBtn');
         const select = document.getElementById('timerSubjectSelect');
@@ -255,8 +258,16 @@
             semSelect.disabled = true;
             btn.innerText = "일시 정지";
             btn.style.background = "#64748b";
+
+            // 💡 현재 시점의 절대 Timestamp를 구하여 백그라운드 구동 대비 기준점 수립
+            const startTime = Date.now() - (elapsedSeconds * 1000);
+            localStorage.setItem('bgTimerStartTime', startTime.toString());
+            localStorage.setItem('bgTimerSubject', select.value);
+            localStorage.setItem('bgTimerSemester', semSelect.value);
+
             timerInterval = setInterval(() => {
-                elapsedSeconds++;
+                // 1초마다 단순히 +1을 하는 것이 아니라, 처음 누른 시간과 '현재 컴퓨터 시간'의 차이를 계산
+                elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
                 document.getElementById('clockDisplay').innerText = formatTimeSpan(elapsedSeconds);
             }, 1000);
         } else {
@@ -266,8 +277,52 @@
             btn.innerText = "공부 시작";
             btn.style.background = "var(--et-red)";
             clearInterval(timerInterval);
+
+            // 타이머 정지 시 백그라운드 데이터 초기화
+            clearBgTimerStorage();
             saveCurrentTimeRecord();
         }
+    }
+
+    // 백그라운드에서 완전히 튕기거나 초기 로드되었을 때 타이머를 이어받는 추적기
+    function checkRunningTimerOnLoad() {
+        const savedStartTime = localStorage.getItem('bgTimerStartTime');
+        if (savedStartTime) {
+            const savedSub = localStorage.getItem('bgTimerSubject');
+            const savedSem = localStorage.getItem('bgTimerSemester');
+
+            if (savedSem) {
+                document.getElementById('semesterSelect').value = savedSem;
+                loadCombinedSubjects();
+            }
+            if (savedSub) {
+                document.getElementById('timerSubjectSelect').value = savedSub;
+            }
+
+            isTimerRunning = true;
+            const btn = document.getElementById('timerControlBtn');
+            const select = document.getElementById('timerSubjectSelect');
+            const semSelect = document.getElementById('semesterSelect');
+
+            select.disabled = true;
+            semSelect.disabled = true;
+            btn.innerText = "일시 정지";
+            btn.style.background = "#64748b";
+
+            const startTime = parseInt(savedStartTime, 10);
+            
+            // 즉시 인터벌 복구하여 꺼져있던 공백을 채움
+            timerInterval = setInterval(() => {
+                elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('clockDisplay').innerText = formatTimeSpan(elapsedSeconds);
+            }, 1000);
+        }
+    }
+
+    function clearBgTimerStorage() {
+        localStorage.removeItem('bgTimerStartTime');
+        localStorage.removeItem('bgTimerSubject');
+        localStorage.removeItem('bgTimerSemester');
     }
 
     function saveCurrentTimeRecord() {
@@ -296,6 +351,8 @@
             document.getElementById('clockDisplay').innerText = "00:00:00";
             document.getElementById('timerControlBtn').innerText = "공부 시작";
             document.getElementById('timerControlBtn').style.background = "var(--et-red)";
+            
+            clearBgTimerStorage();
         }
     }
 
