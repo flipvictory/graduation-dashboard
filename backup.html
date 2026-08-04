@@ -10,9 +10,10 @@
             --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
             --et-light-gray: #f2f2f2; --et-border: #e3e3e3; --bg-color: #ffffff; --card-bg: #ffffff; --danger-color: #ef4444;
         }
+        /* 하단 바에 가려지지 않도록 padding-bottom: 90px 추가 */
         body {
             font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--et-dark); margin: 0;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(30px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(90px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
             display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;
         }
         html { -webkit-text-size-adjust: 100%; }
