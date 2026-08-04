@@ -11,24 +11,24 @@
             --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
             --et-border: #e3e3e3; --secondary-color: #0ea5e9; --bg-color: #ffffff; --card-bg: #ffffff;
         }
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: 0 0 30px 0; display: flex; flex-direction: column; align-items: center; }
+        /* 하단 바에 가려지지 않도록 padding-bottom: 90px 추가 */
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); margin: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(90px + env(safe-area-inset-bottom)) env(safe-area-inset-left); display: flex; flex-direction: column; align-items: center; }
         .container { max-width: 600px; width: 100%; box-sizing: border-box; padding: 0 16px; }
         .et-header { display: flex; justify-content: space-between; align-items: center; height: 50px; border-bottom: 1px solid var(--et-border); margin-bottom: 20px; }
         .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
         
-        /* 사이드바 UI 추가 */
         .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
         .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
         .sidebar.active { left: 0; }
         .sidebar-overlay.active { display: block; }
-        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-light-gray); padding-bottom: 10px; }
+        .sidebar-title { font-size: 1.2rem; font-weight: 700; color: var(--et-red); margin-bottom: 30px; border-bottom: 2px solid var(--et-border); padding-bottom: 10px; }
         .sidebar-menu { list-style: none; padding: 0; margin: 0; }
         .sidebar-menu li { margin-bottom: 12px; }
         .sidebar-menu a { text-decoration: none; color: var(--et-dark); font-size: 1rem; font-weight: 500; display: block; padding: 12px 16px; border-radius: 8px; transition: all 0.2s; }
         .sidebar-menu a:hover, .sidebar-menu a.active { background: var(--et-red-light); color: var(--et-red); font-weight: 700; }
 
-        summary-box-grad { background: var(--et-red); color: #fff; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
+        .summary-box-grad { background: var(--et-red); color: #fff; border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 20px; }
         .summary-box-grad h3 { font-size: 0.82rem; margin: 0 0 4px 0; opacity: 0.9; font-weight: 400; }
         .summary-box-grad p { font-size: 1.8rem; font-weight: 700; margin: 0; }
         .card { background: var(--card-bg); border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); padding: 20px; border: 1px solid var(--et-border); margin-bottom: 25px; box-sizing: border-box; }
