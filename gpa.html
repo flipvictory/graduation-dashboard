@@ -9,6 +9,8 @@
     <title>학점계산기</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 매끄러운 드래그 앤 드롭을 위한 SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         :root {
             --et-red: #c62917; --et-red-light: #fef2f2; --et-dark: #292929; --et-muted: #a6a6a6;
@@ -17,7 +19,7 @@
         }
         body {
             font-family: 'Noto Sans KR', sans-serif; background-color: var(--bg-color); color: var(--et-dark); margin: 0;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(30px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(90px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
             display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;
         }
         html { -webkit-text-size-adjust: 100%; }
@@ -28,7 +30,6 @@
         .et-header h1 { font-size: 1.15rem; font-weight: 700; margin: 0; }
         .close-btn { font-size: 1.4rem; color: #000; cursor: pointer; background: none; border: none; padding: 0 10px; font-weight: 300; }
         
-        /* 사이드바 UI 추가 */
         .menu-btn { font-size: 1.4rem; background: none; border: none; cursor: pointer; padding: 0 10px; color: var(--et-dark); }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 9999; }
         .sidebar { position: fixed; top: 0; left: -260px; width: 260px; height: 100%; background: #fff; box-shadow: 4px 0 15px rgba(0,0,0,0.1); z-index: 10000; transition: left 0.3s ease; padding: 20px; box-sizing: border-box; }
@@ -69,9 +70,13 @@
         .et-btn-timetable { background-color: var(--et-red); color: #ffffff; border: none; border-radius: 20px; padding: 8px 14px; font-size: 0.82rem; font-weight: bold; cursor: pointer; }
         .et-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
         .et-table th { font-size: 0.82rem; color: var(--et-muted); font-weight: 400; padding: 8px 4px; border-bottom: 1px solid var(--et-border); }
-        .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; }
-        .draggable-tr { transition: transform 0.22s cubic-bezier(0.2, 0, 0.2, 1), background-color 0.2s; user-select: none; -webkit-user-select: none; }
-        .draggable-tr.dragging { opacity: 0.75; background-color: var(--et-red-light) !important; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.12); cursor: move; }
+        .et-table td { font-size: 0.92rem; padding: 14px 4px; border-bottom: 1px solid var(--et-border); position: relative; background-color: #ffffff; }
+        
+        /* 드래그 상태 스타일 */
+        .draggable-tr { transition: background-color 0.2s; user-select: none; -webkit-user-select: none; }
+        .sortable-ghost { opacity: 0.5; background-color: var(--et-red-light) !important; }
+        .sortable-drag { box-shadow: 0 12px 24px rgba(0,0,0,0.1) !important; background-color: #ffffff !important; cursor: grabbing !important; }
+        
         .et-col-name { padding-left: 6px !important; }
         .course-title-wrapper { display: flex; align-items: center; max-width: 100%; overflow: hidden; flex-wrap: wrap; gap: 4px; }
         .course-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 1; font-weight: 500; color: #000; }
@@ -89,6 +94,7 @@
         .et-chk-indicator.checked { background-color: var(--et-red); border-color: var(--et-red); }
         .et-chk-indicator.checked::after { content: '✓'; color: #fff; font-size: 11px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .inline-edit-row { background-color: #fafafa !important; }
+        .inline-edit-row td { background-color: #fafafa !important; }
         .inline-edit-box { display: flex; flex-direction: column; gap: 8px; padding: 6px 4px; }
         .inline-edit-inputs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
         .inline-edit-inputs input { grid-column: span 2; padding: 8px; border: 1px solid var(--et-border); border-radius: 4px; font-size: 0.88rem; box-sizing: border-box; width: 100%; }
@@ -434,8 +440,9 @@
 
         const etTbody = document.getElementById('etSubjectTableBody');
         etTbody.innerHTML = '';
-        if(activeGroup.subjects.length === 0) etTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--et-muted); padding:30px 0;">등록된 과목이 없습니다.</td></tr>`;
-        else {
+        if(activeGroup.subjects.length === 0) {
+            etTbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--et-muted); padding:30px 0;">등록된 과목이 없습니다.</td></tr>`;
+        } else {
             activeGroup.subjects.forEach(sub => {
                 const origIdx = subjectData.findIndex(s => s === sub);
                 const isMajor = (sub.courseType === '전공필수' || sub.courseType === '전공선택' || sub.courseType === '심화필수');
@@ -476,6 +483,50 @@
             });
         }
         drawGpaChart();
+        initSortable();
+    }
+
+    // 모바일 터치 및 드래그를 부드럽게 처리하는 Sortable 초기화
+    function initSortable() {
+        const etTbody = document.getElementById('etSubjectTableBody');
+        if (!etTbody) return;
+        
+        if (window.gpaSortable) {
+            window.gpaSortable.destroy();
+        }
+        
+        window.gpaSortable = new Sortable(etTbody, {
+            animation: 250, // 매끄러운 위치 전환
+            delay: 150, // 토스 앱처럼 길게 눌렀을 때 반응 (모바일 최적화)
+            delayOnTouchOnly: true,
+            filter: '.inline-edit-row', // 수정 패널은 드래그 제외
+            preventOnFilter: false,
+            onStart: function() {
+                // 드래그 시작 시 떠있는 성적 선택창 및 수정창 닫기
+                document.querySelectorAll('.inline-grade-picker').forEach(el => el.remove());
+                if (activeInlineEditIndex !== -1) {
+                    activeInlineEditIndex = -1; 
+                }
+            },
+            onEnd: function(evt) {
+                // 변경된 테이블 행의 원래 순서(data-index)를 추적하여 배열 재생성
+                const newOrderIndices = Array.from(etTbody.querySelectorAll('.draggable-tr')).map(tr => parseInt(tr.getAttribute('data-index')));
+                let newSubjectData = [];
+                
+                // 현재 학기가 아닌 과목 먼저 유지
+                subjectData.forEach(sub => {
+                    if (sub.semester !== activeSemester) newSubjectData.push(sub);
+                });
+                
+                // 바뀐 순서대로 현재 학기 과목 추가
+                newOrderIndices.forEach(idx => {
+                    newSubjectData.push(subjectData[idx]);
+                });
+                
+                subjectData = newSubjectData;
+                updateDashboard();
+            }
+        });
     }
 
     function drawGpaChart() {
