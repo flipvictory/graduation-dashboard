@@ -9,6 +9,7 @@
             margin: 0; padding: 0;
             width: 100%; height: 100%;
             overflow: hidden; background-color: #ffffff;
+            font-family: 'Noto Sans KR', sans-serif;
         }
         /* 전체 화면 뷰포트 */
         .viewport {
@@ -26,6 +27,29 @@
             width: 100vw; height: 100%;
             border: none; outline: none;
         }
+        
+        /* 하단 고정 네비게이션 바 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            height: 65px;
+            background: #ffffff;
+            border-top: 1px solid #e3e3e3;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 10000;
+            padding-bottom: env(safe-area-inset-bottom);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+        .bottom-nav button {
+            flex: 1; background: none; border: none; font-size: 0.72rem; color: #a6a6a6;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer;
+            -webkit-tap-highlight-color: transparent; font-family: inherit; font-weight: 500; height: 100%;
+        }
+        .bottom-nav button.active { color: #c62917; font-weight: 700; }
+        .bottom-nav button .icon { font-size: 1.3rem; transition: transform 0.2s; }
+        .bottom-nav button.active .icon { transform: scale(1.15); }
     </style>
 </head>
 <body>
@@ -40,6 +64,14 @@
     </div>
 </div>
 
+<div class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" onclick="goToPage(0)"><span class="icon">📊</span>학점</button>
+    <button class="nav-btn" onclick="goToPage(1)"><span class="icon">🎓</span>졸업</button>
+    <button class="nav-btn" onclick="goToPage(2)"><span class="icon">📅</span>할일</button>
+    <button class="nav-btn" onclick="goToPage(3)"><span class="icon">⏱️</span>타이머</button>
+    <button class="nav-btn" onclick="goToPage(4)"><span class="icon">⚙️</span>설정</button>
+</div>
+
 <script>
     let currentIndex = 0;
     const slider = document.getElementById('mainSlider');
@@ -51,7 +83,14 @@
         currentIndex = index;
         slider.style.transform = `translateX(-${currentIndex * 100}vw)`;
         
-        // 페이지가 바뀔 때 모든 iframe 내부의 사이드바를 자동으로 닫아주는 센스
+        // 네비게이션 버튼 활성화 상태 업데이트
+        const navBtns = document.querySelectorAll('.nav-btn');
+        navBtns.forEach((btn, i) => {
+            if (i === index) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        
+        // 페이지가 바뀔 때 모든 iframe 내부의 사이드바를 자동으로 닫아주기
         for (let i = 0; i < pageCount; i++) {
             const frame = document.getElementById(`frame${i}`);
             if (frame && frame.contentDocument) {
@@ -80,12 +119,19 @@
 
         // 1. 좌우 스와이프 감지 이벤트
         doc.addEventListener('touchstart', (e) => {
+            // 가로 스크롤이 필요한 요소(학점 탭, 할일 스크롤 등) 위에서 스와이프 할 때는 페이지 전환 방지
+            if (e.target.closest('.et-tabs-wrapper') || e.target.closest('.todo-scroll-viewport')) {
+                startX = -1; 
+                startY = -1;
+                return;
+            }
             startX = e.touches[0].clientX;
             startY = e.touches[0].clientY;
         }, { passive: true });
 
         doc.addEventListener('touchend', (e) => {
-            // 만약 iframe 내부의 사이드바 메뉴가 열려있는 상태라면 스와이프 이동을 막음
+            if (startX === -1) return; // 취소된 터치 무시
+
             const sidebar = doc.getElementById('sidebar');
             if (sidebar && sidebar.classList.contains('active')) return;
 
@@ -98,10 +144,8 @@
             // 대각선 스크롤 오작동 방지 (정확히 좌우 동작이 강할 때만 작동)
             if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
                 if (diffX > 0) {
-                    // 왼쪽으로 슥 밀었을 때 -> 다음 페이지로
                     if (currentIndex < pageCount - 1) goToPage(currentIndex + 1);
                 } else {
-                    // 오른쪽으로 슥 밀었을 때 -> 이전 페이지로
                     if (currentIndex > 0) goToPage(currentIndex - 1);
                 }
             }
