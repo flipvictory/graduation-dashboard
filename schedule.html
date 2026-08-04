@@ -24,23 +24,17 @@
             accent-color: #c62917;
         }
 
+        /* 하단 바에 가려지지 않도록 padding-bottom: 90px 추가 */
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background-color: var(--bg-color);
             color: var(--et-dark);
             margin: 0;
-            padding: 0 0 40px 0;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) calc(90px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
             display: flex;
             flex-direction: column;
             align-items: center;
             -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: calc(40px + env(safe-area-inset-bottom));
-            padding-left: env(safe-area-inset-left);
-            padding-right: env(safe-area-inset-right);
         }
 
         html { -webkit-text-size-adjust: 100%; }
